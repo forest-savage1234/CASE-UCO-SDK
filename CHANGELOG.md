@@ -21,6 +21,7 @@ The `layered`, `means`, and `expense` extensions ship as candidate packages, the
 - The critic replay fixtures in `evaluation/critic/responses/mock/` assess one scorecard dimension. The CI replay that requires `accepted` failed in 1.32.0 because two empty passes now finish as `review_unattested`.
 - `CRIT-H-ENTITY-TYPE-ANCHOR` reads the non-person name tokens from document mapping instead of keeping its own copy.
 - `layered` declares UCO 1.5.0 compatibility.
+- `case_uco.validation.graph` passes `mypy` again. The 1.32.0 SPARQL crash attribution reused a `str` variable for a tuple.
 - Credit for 1.32.0: the NANP phone gate is from @mrinaalr ([#160](https://github.com/vulnmaster/CASE-UCO-SDK/pull/160)), and nested shape namespaces in the generator are from @chrishargreaves ([#162](https://github.com/vulnmaster/CASE-UCO-SDK/pull/162)).
 
 

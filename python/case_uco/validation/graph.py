@@ -647,10 +647,10 @@ def validate_graph_file(
 
     if "ParseException" in combined or "Expected SelectQuery" in combined:
         verification_status = "could_not_verify"
-        named = tuple(p.name for p in sparql_crash_files)
+        crash_names = tuple(p.name for p in sparql_crash_files)
         verification_errors = (
-            ("shacl_sparql_parse_failed:" + ",".join(named),)
-            if named
+            ("shacl_sparql_parse_failed:" + ",".join(crash_names),)
+            if crash_names
             else ("shacl_sparql_parse_failed",)
         )
         # Do not claim SHACL or coverage passed after a shapes crash.
