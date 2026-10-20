@@ -114,6 +114,7 @@ System.out.println(graph.serialize());
 
 ## Related
 
+- [sosa-sensor-observations.md](sosa-sensor-observations.md) — phone sensor and health-app readings (barometer, step count, heart rate)
 - [starter-mobile-extraction.md](starter-mobile-extraction.md) — end-to-end mobile extraction starter kit
 - [mobile-device-sim.md](mobile-device-sim.md) — handset + SIM identifiers
 - [sms-and-contacts.md](sms-and-contacts.md) — messages and contacts from the extraction

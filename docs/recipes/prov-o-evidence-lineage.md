@@ -113,6 +113,7 @@ case_validate --built-version case-1.5.0 \
 
 ## Related
 
+- [sosa-sensor-observations.md](sosa-sensor-observations.md) — tying sensor readings to the file they were extracted from
 - [chain-of-custody.md](chain-of-custody.md) — custody actions and provenance records
 - [starter-tool-run.md](starter-tool-run.md) — tool input/output linking
 - [solveit-plan-execution-provenance.md](solveit-plan-execution-provenance.md) — `prov:Plan` and execution

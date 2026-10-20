@@ -7,6 +7,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.32.2] - 2026-10-19
+
+Sensor, telemetry, and measurement evidence now routes to the QUDT and SOSA/SSN recipes, candidate recipes can be found but always come back labeled, and `make deprecate-recipe` no longer deletes unrelated index entries.
+
+### Added
+
+- Routing family `sensor-telemetry-measurement` for vehicle infotainment and telematics, wearables and health apps, smart-home and IoT sensors, weather stations, and drone flight logs. It recommends the SOSA/SSN and QUDT recipes and profiles first, then device, location, GeoSPARQL, OWL-Time, and PROV-O. It does not match on `ssn`, which in case text usually means a Social Security number.
+- `route_investigation_content` returns `measurement_signals` when the text holds numbers with pinned QUDT units (`72 mph`, `142 bpm`, `15.2 V`, `13 TeV`). Durations, counts, statute citations, and spaced single letters (`Apartment 4 B`) are not counted, and a currency amount alone is a weak signal. A unit missing from the pinned QUDT vocabulary comes back with `unit_id: null` and guidance not to invent one.
+- `CANDIDATE_RECIPE_INDEX` registers the recipes in `docs/recipes/candidates/` (UAS flight log, layered ESM composition, means action-space, expense benefit-at-expense). They stay out of `RECIPE_INDEX` and `INDEX.md`. A strong match comes back labeled `status: candidate` with the extension to load by name: `candidate_recipe_hits` from `route_investigation_content`, `candidate_recipes` from `get_recipes`, and from `get_recipe` when the candidate matches more of the query than any operational recipe. A test fails if a candidate file is unregistered.
+- `guide_mapping` entries for vehicle infotainment, wearable exports, IoT sensor logs, and drone flight logs.
+- Cross-links to the QUDT and SOSA/SSN recipes from the device, location, mobile device, GeoSPARQL, OWL-Time, PROV-O, cross-ontology composition, public record, OT/ICS, and crypto laundering recipes. The UAS candidate links to SOSA, QUDT, GeoSPARQL, and OWL-Time, and the ESM candidates link to cross-ontology composition.
+
+### Changed
+
+- `ranked_recipe_hits` weights rare terms above common ones and ranks the QUDT recipe first when the text has measured quantities. The verbatim #159 Higgs abstract now puts `qudt-quantities-and-units.md` first; the 1.32.0 test used edited text.
+- The financial-crime family lists the QUDT recipe, and the device and mobile family lists the SOSA/SSN recipe.
+- `get_recipe` breaks ties toward the recipe whose title or file name contains the query word, so `get_recipe("qudt")` returns the QUDT recipe instead of SOSA/SSN, and `mobile` and `email` return their own recipes.
+
+### Fixed
+
+- `make deprecate-recipe` matched from the first `{` in `domain_index.py` to the deprecated entry. Deprecating the QUDT recipe would have deleted 1,081 lines, including unrelated lists. The match now stays inside one entry. Promotion also removes the recipe's `CANDIDATE_RECIPE_INDEX` entry, and deprecation adds one back.
+
+Package versions bumped to **1.32.2**.
+
 ## [1.32.1] - 2026-10-19
 
 The `layered`, `means`, and `expense` extensions ship as candidate packages, the accepted-repair replay passes again, and bold names in press releases are people again.
@@ -3236,7 +3260,8 @@ digital forensics, cyber-investigation, and cyber-observable data.
 - GitHub Actions workflows: CI, CodeQL, dependency review, release
 - Dependabot configuration for automated dependency updates
 
-[Unreleased]: https://github.com/vulnmaster/CASE-UCO-SDK/compare/v1.32.1...HEAD
+[Unreleased]: https://github.com/vulnmaster/CASE-UCO-SDK/compare/v1.32.2...HEAD
+[1.32.2]: https://github.com/vulnmaster/CASE-UCO-SDK/compare/v1.32.1...v1.32.2
 [1.32.1]: https://github.com/vulnmaster/CASE-UCO-SDK/compare/v1.32.0...v1.32.1
 [1.32.0]: https://github.com/vulnmaster/CASE-UCO-SDK/compare/v1.31.2...v1.32.0
 [1.31.2]: https://github.com/vulnmaster/CASE-UCO-SDK/compare/v1.31.1...v1.31.2

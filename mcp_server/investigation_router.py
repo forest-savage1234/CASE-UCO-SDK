@@ -21,6 +21,7 @@ from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any
 
+import recipe_ranking
 import semantic_retrieval
 from apple_acquisition import apple_collect_guidance
 from cac_content_router import (
@@ -31,71 +32,15 @@ from cac_content_router import (
     resolve_submission_text,
 )
 from document_genre import CATALOG_RECIPE, detect_document_genre
-from domain_index import RECIPE_INDEX
 
 MIN_FAMILY_SCORE = 2
 
-_RECIPE_QUERY_STOP = frozenset(
-    {
-        "the", "and", "for", "with", "that", "this", "from", "were", "was",
-        "are", "been", "have", "has", "not", "but", "into", "over", "under",
-        "than", "then", "them", "they", "their", "there", "these", "those",
-        "about", "after", "before", "between", "which", "while", "where",
-        "when", "what", "will", "would", "could", "should", "using", "used",
-        "also", "only", "each", "such", "other", "into", "onto", "per",
-        "via", "its", "our", "your", "present", "reported", "estimated",
-    }
-)
-
-
-def _recipe_blob(recipe: dict[str, str]) -> str:
-    return f"{recipe['title']} {recipe['description']} {recipe['keywords']}".lower()
-
 
 def ranked_recipe_hits(text: str, *, limit: int = 6) -> list[dict[str, Any]]:
-    """Top catalog recipes for an abstaining or weakly matched submission.
+    """Top catalog recipes for an abstaining or weakly matched submission."""
 
-    Scoring is the same catalog text ``get_recipes`` searches, weighted by how
-    rare each overlapping token is, so one common word does not outrank a
-    distinctive measurement or sensor term.
-    """
+    return recipe_ranking.rank_recipes(text, limit=limit)
 
-    tokens: list[str] = []
-    seen: set[str] = set()
-    for raw in re.findall(r"[A-Za-z][A-Za-z0-9+/-]{3,}", text or ""):
-        word = raw.lower()
-        if word in _RECIPE_QUERY_STOP or word in seen:
-            continue
-        seen.add(word)
-        tokens.append(word)
-        if len(tokens) >= 24:
-            break
-    if not tokens:
-        return []
-    blobs = [(recipe, _recipe_blob(recipe)) for recipe in RECIPE_INDEX]
-    doc_freq = {
-        token: sum(1 for _recipe, blob in blobs if token in blob) for token in tokens
-    }
-    scored: list[tuple[float, dict[str, str], list[str]]] = []
-    for recipe, blob in blobs:
-        matched = [token for token in tokens if token in blob and doc_freq[token]]
-        if not matched:
-            continue
-        score = sum(1.0 / doc_freq[token] for token in matched)
-        scored.append((score, recipe, matched))
-    scored.sort(key=lambda item: (-item[0], item[1]["title"]))
-    hits = []
-    for score, recipe, matched in scored[:limit]:
-        hits.append(
-            {
-                "file": recipe["file"],
-                "score": round(score, 4),
-                "title": recipe["title"],
-                "rationale": recipe["description"],
-                "matched_terms": matched[:8],
-            }
-        )
-    return hits
 
 # Primary composition recipe for multi-domain / cross-ontology graphs (#66).
 # Prefer this over the legacy cross-domain-extensions.md redirect stub.
@@ -146,6 +91,9 @@ class InvestigationFamily:
     core_namespaces: tuple[str, ...] = ()
     upper_profiles: tuple[str, ...] = ()
     notes: str = ""
+    # Semantic retrieval text when the keywords contain common words
+    # ("count", "record", "flight") that would pull in unrelated filings.
+    semantic_terms: tuple[str, ...] = ()
 
 
 @dataclass
@@ -294,6 +242,7 @@ INVESTIGATION_FAMILIES: tuple[InvestigationFamily, ...] = (
             "docs/recipes/fraud-crypto-laundering.md",
             "docs/recipes/elder-fraud-impersonation.md",
             "docs/recipes/legal-process-modeling.md",
+            "docs/recipes/qudt-quantities-and-units.md",
         ),
         extensions=("cryptoinv", "legalproc"),
         core_namespaces=("case-investigation", "uco-observable", "uco-action", "uco-identity"),
@@ -428,6 +377,7 @@ INVESTIGATION_FAMILIES: tuple[InvestigationFamily, ...] = (
             "docs/recipes/apple-unified-logs.md",
             "docs/recipes/solve-it-investigation-planning.md",
             "docs/recipes/technique-evidence-outcome.md",
+            "docs/recipes/sosa-sensor-observations.md",
         ),
         extensions=("solveit",),
         core_namespaces=("uco-observable", "uco-action", "uco-tool"),
@@ -759,6 +709,53 @@ INVESTIGATION_FAMILIES: tuple[InvestigationFamily, ...] = (
             "it by the offense instead."
         ),
     ),
+    InvestigationFamily(
+        family_id="sensor-telemetry-measurement",
+        title="Sensor Telemetry and Measured Quantities",
+        keywords=(
+            "telemetry", "sensor reading", "sensor data", "sensor log",
+            "accelerometer", "gyroscope", "barometer", "magnetometer",
+            "heart rate", "step count", "wearable", "fitbit", "smartwatch",
+            "apple watch", "garmin", "infotainment", "telematics",
+            "head unit", "odometer", "gnss", "gps track", "track log",
+            "ground speed", "wind speed", "altitude", "battery voltage",
+            "thermostat", "smart home", "door sensor", "motion sensor", "iot",
+            "weather station", "precipitation", "temperature", "humidity",
+            "flight log", "flight record", "dataflash", "mavlink",
+            "unmanned aircraft", "drone", "qudt", "sosa", "quantity kind",
+            "unit of measure", "units of measure", "measurement",
+        ),
+        semantic_terms=(
+            "telemetry", "sensor", "sensors", "accelerometer", "gyroscope",
+            "barometer", "wearable", "fitbit", "smartwatch", "infotainment",
+            "telematics", "odometer", "thermostat", "humidity",
+            "precipitation", "altitude", "dataflash", "mavlink",
+        ),
+        recipes=(
+            "docs/recipes/sosa-sensor-observations.md",
+            "docs/recipes/qudt-quantities-and-units.md",
+            "docs/recipes/device.md",
+            "docs/recipes/location.md",
+            "docs/recipes/geosparql-geospatial-evidence.md",
+            "docs/recipes/owl-time-temporal-evidence.md",
+            "docs/recipes/prov-o-evidence-lineage.md",
+        ),
+        core_namespaces=("uco-observable", "uco-core", "uco-location", "uco-action"),
+        upper_profiles=("SOSA", "SSN", "QUDT", "GeoSPARQL", "OWL-Time", "PROV-O"),
+        notes=(
+            "A sensor's reading (vehicle GNSS speed, wearable heart rate, a "
+            "thermostat's temperature) is a sosa:Observation made by a Device "
+            "typed sosa:Sensor and hosted on a sosa:Platform; its result is a "
+            "qudt:QuantityValue with qudt:value and qudt:hasUnit. A computed "
+            "or looked-up value (a wallet's USD valuation, a lab net weight) "
+            "is a qudt:Quantity, not an observation. Look units up with "
+            "lookup_qudt_units; do not guess unit IRIs. Ignition, door, and "
+            "pairing events stay UCO events with native times. Drone flight "
+            "logs have a candidate recipe (docs/recipes/candidates/"
+            "uas-flight-log.md, extension uas) listed in "
+            "candidate_recipe_hits when the text matches it."
+        ),
+    ),
 )
 
 UPPER_PROFILE_HINTS = {
@@ -770,6 +767,9 @@ UPPER_PROFILE_HINTS = {
     "ORG": "organizational structure (org:Organization, org:memberOf, org:reportsTo)",
     "BFO": "Basic Formal Ontology alignment for formal upper-level typing",
     "PROF": "validation-profile metadata (prof:Profile) — intent and resource descriptors, not SHACL results",
+    "QUDT": "numbers with units and quantity kinds (qudt:QuantityValue, qudt:hasUnit); look units up with lookup_qudt_units",
+    "SOSA": "sensor readings as observations (sosa:Observation, sosa:madeBySensor, sosa:hasResult)",
+    "SSN": "sensor systems, deployments, and stated accuracy (ssn-system:SystemCapability); selecting ssn also selects sosa",
 }
 
 # Display names used on InvestigationFamily.upper_profiles → validation_bundle IDs.
@@ -962,7 +962,8 @@ def _family_document_text(family: InvestigationFamily) -> str:
     with a keyword score of zero.
     """
 
-    return " ".join([family.title, " ".join(family.keywords)])
+    terms = family.semantic_terms or family.keywords
+    return " ".join([family.title, " ".join(terms)])
 
 
 def _family_match_payload(
@@ -1579,6 +1580,33 @@ def route_investigation_content(
         payload["extension_integrity_failures"] = integrity_failures
     if extraction_quality.get("noisy_extraction"):
         payload["extraction_quality"] = extraction_quality
+
+    quantities = recipe_ranking.measured_quantities(text)
+    if recipe_ranking.measurement_signal_strength(quantities):
+        sensor_context = any(
+            m["family_id"] == "sensor-telemetry-measurement"
+            for m in matches + [{"family_id": c["family_id"]} for c in abstained_candidates]
+        )
+        payload["measurement_signals"] = {
+            "quantities": quantities,
+            "recipes": [recipe_ranking.QUDT_RECIPE]
+            + ([recipe_ranking.SOSA_RECIPE] if sensor_context else []),
+            "guidance": (
+                "Numbers with units are qudt:QuantityValue nodes (qudt:value, "
+                "qudt:hasUnit); find unit IRIs with lookup_qudt_units. Wrap one "
+                "in a sosa:Observation only when a sensor reported it."
+                + (
+                    " A null unit_id means the pinned QUDT units have no such "
+                    "unit: convert to a unit lookup_qudt_units returns or record "
+                    "the value as text, never invent a unit IRI."
+                    if any(q["unit_id"] is None for q in quantities)
+                    else ""
+                )
+            ),
+        }
+    candidate_hits = recipe_ranking.rank_candidate_recipes(text)
+    if candidate_hits:
+        payload["candidate_recipe_hits"] = candidate_hits
 
     if matches:
         payload["recommended_workflow"] = build_general_workflow(matches, installed)

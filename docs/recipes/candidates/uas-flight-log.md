@@ -245,6 +245,10 @@ Conforms: True
 
 ## Related
 
+- [sosa-sensor-observations.md](../sosa-sensor-observations.md) — altitude, speed, and battery readings as sensor observations
+- [qudt-quantities-and-units.md](../qudt-quantities-and-units.md) — units for logged values; look them up with `lookup_qudt_units`
+- [geosparql-geospatial-evidence.md](../geosparql-geospatial-evidence.md) — geometries for per-fix positions and the home point
+- [owl-time-temporal-evidence.md](../owl-time-temporal-evidence.md) — the sortie interval
 - [extensions.md](../extensions.md) — how candidate extensions and strict concept coverage work
 - [change-proposal.md](../change-proposal.md) — the upstream loop this recipe feeds
 - [location.md](../location.md) — device-stored location artifacts

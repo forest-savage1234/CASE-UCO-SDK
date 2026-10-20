@@ -180,8 +180,11 @@ modeling decision, a poisoned source document, or a one-off case cannot
 silently influence future investigations:
 
 1. **Candidate** — draft new recipes in `docs/recipes/candidates/` (see the
-   README there). Candidate recipes are invisible to `RECIPE_INDEX`,
-   `INDEX.md`, and all routing tools. Extension ontologies drafted during
+   README there). Candidate recipes stay out of `RECIPE_INDEX` and
+   `INDEX.md`; register each in `CANDIDATE_RECIPE_INDEX` instead (a test
+   fails if one is missing). Routing returns a candidate only on a strong
+   match and always labeled with `status: candidate` and the extension to
+   load (`candidate_recipe_hits`, `candidate_recipes`). Extension ontologies drafted during
    an investigation carry `"status": "candidate"` in their `manifest.json`;
    routing ignores them, but the authoring investigation can still load them
    explicitly by name (`validate_graph(extensions=["myext"])`).
@@ -192,7 +195,7 @@ silently influence future investigations:
      transactionally moves the candidate into `docs/recipes/`, validates
      recipe structure (title, Scenario/Pattern/Validation sections, code
      fence, metadata block), registers it in `INDEX.md` and `RECIPE_INDEX`,
-     and records provenance in `docs/recipes/promotion-log.json`. A
+     drops its `CANDIDATE_RECIPE_INDEX` entry, and records provenance in `docs/recipes/promotion-log.json`. A
      structurally invalid candidate is rejected untouched.
    - extensions: `make promote-extension EXT=<name> REVIEWER="..."` — runs
      validation gates (manifest schema, ontology parse, class anchoring to
@@ -207,7 +210,8 @@ silently influence future investigations:
    removes the artifact from routing:
    - `make deprecate-extension EXT=<name> REASON="..."`;
    - `make deprecate-recipe RECIPE=<slug> REASON="..."` — moves the recipe
-     back to `docs/recipes/candidates/` and removes its index entries;
+     back to `docs/recipes/candidates/`, removes its operational index
+     entries, and registers it in `CANDIDATE_RECIPE_INDEX`;
    - one-command rollback to a previous approved generation:
      `make rollback-extension EXT=<name> REF=<tag-or-commit>` (git-based —
      all knowledge artifacts are version-controlled files). Recipes roll

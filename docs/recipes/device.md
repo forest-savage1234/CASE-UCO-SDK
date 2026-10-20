@@ -91,6 +91,7 @@ graph.write("device.jsonld")
 
 ## Related
 
+- [sosa-sensor-observations.md](sosa-sensor-observations.md) — a device as a `sosa:Platform` hosting `sosa:Sensor` devices, and its readings
 - [mobile-device.md](mobile-device.md) — mobile-specific device modeling
 - [mobile-device-sim.md](mobile-device-sim.md) — handset + SIM card detail
 - [event.md](event.md) — authentication and system events on the device

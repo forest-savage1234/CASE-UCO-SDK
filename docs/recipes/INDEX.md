@@ -165,3 +165,8 @@ CAC recipes talk about **offenders** who target children and other vulnerable pe
 |---|---|---|---|
 | Proposing Changes to CASE/UCO | [change-proposal.md](change-proposal.md) | Identify gaps, check existing proposals, and draft change proposals | — |
 | Authoring and Improving Recipes | [recipe-authoring.md](recipe-authoring.md) | Write and register a new recipe, or improve an existing one a live case proved wrong or incomplete (structure, grounding rules, re-validation, MCP index registration) | — |
+
+Candidate recipes for extensions that are not yet promoted (UAS flight logs,
+layered ESM composition, means action-space, expense benefit-at-expense) are
+listed in [candidates/README.md](candidates/README.md). Routing returns them
+only labeled as candidates.

@@ -265,6 +265,7 @@ ORDER BY ?start
 
 ## Related
 
+- [sosa-sensor-observations.md](sosa-sensor-observations.md) — process-sensor and historian readings as observations with QUDT results
 - [network-investigation.md](network-investigation.md) — PCAP three-layer pattern
 - [cyber-threat-intelligence.md](cyber-threat-intelligence.md) — threat narrative and ATT&CK typing
 - [cross-ontology-composition.md](cross-ontology-composition.md) — when to combine technique vocabularies (principle 6)

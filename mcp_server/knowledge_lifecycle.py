@@ -503,7 +503,46 @@ def deprecate_extension(
 # ---------------------------------------------------------------------------
 
 _RECIPE_INDEX_MARKER = "RECIPE_INDEX: list[dict[str, str]] = ["
+_CANDIDATE_INDEX_MARKER = "CANDIDATE_RECIPE_INDEX: list[dict[str, str]] = ["
 _LEARNED_SECTION_HEADER = "### Learned recipes (promoted from candidates)"
+
+
+def _index_entry_re(file_path: str) -> re.Pattern[str]:
+    """One ``{...}`` entry whose ``file`` is ``file_path``.
+
+    Entry bodies are indented eight spaces, so the match cannot run across
+    the four-space braces of neighbouring entries or other lists.
+    """
+
+    return re.compile(
+        r"    \{\n(?:        .*\n)*?"
+        rf'        "file": "{re.escape(file_path)}",\n'
+        r"(?:        .*\n)*?"
+        r"    \},\n"
+    )
+
+
+def _insert_candidate_entry(domain_index_src: str, slug: str, recipe_path: Path) -> str:
+    """Register a demoted recipe in ``CANDIDATE_RECIPE_INDEX``."""
+
+    marker_pos = domain_index_src.find(_CANDIDATE_INDEX_MARKER)
+    if marker_pos < 0:
+        return domain_index_src
+    close_pos = domain_index_src.find("\n]\n", marker_pos)
+    if close_pos < 0:
+        return domain_index_src
+    text = recipe_path.read_text(encoding="utf-8") if recipe_path.is_file() else ""
+    title_match = re.search(r"^# (.+)$", text, flags=re.MULTILINE)
+    title = title_match.group(1).strip() if title_match else slug
+    entry_src = (
+        "    {\n"
+        f'        "title": {json.dumps(title)},\n'
+        f'        "description": {json.dumps(title)},\n'
+        f'        "keywords": {json.dumps(slug.replace("-", " "))},\n'
+        f'        "file": {json.dumps(f"{CANDIDATE_RECIPE_DIR}/{slug}.md")},\n'
+        "    },\n"
+    )
+    return domain_index_src[: close_pos + 1] + entry_src + domain_index_src[close_pos + 1:]
 
 
 def _recipe_structure_errors(text: str, recipes_dir: Path, slug: str) -> list[str]:
@@ -665,6 +704,9 @@ def promote_recipe(
     domain_index_src = (
         domain_index_src[: close_pos + 1] + entry_src + domain_index_src[close_pos + 1:]
     )
+    domain_index_src = _index_entry_re(f"{CANDIDATE_RECIPE_DIR}/{slug}.md").sub(
+        "", domain_index_src, count=1
+    )
 
     log_path = project_root / RECIPE_PROMOTION_LOG
     log_entries = []
@@ -820,12 +862,8 @@ def deprecate_recipe(
     ) + "\n"
 
     domain_index_src = domain_index_path.read_text(encoding="utf-8")
-    entry_re = re.compile(
-        r"    \{\n(?:.*\n)*?"
-        rf'        "file": "{re.escape(RECIPE_DIR)}/{re.escape(slug)}\.md",\n'
-        r"    \},\n"
-    )
-    domain_index_src = entry_re.sub("", domain_index_src, count=1)
+    domain_index_src = _index_entry_re(f"{RECIPE_DIR}/{slug}.md").sub("", domain_index_src, count=1)
+    domain_index_src = _insert_candidate_entry(domain_index_src, slug, target_path)
 
     log_path = project_root / RECIPE_PROMOTION_LOG
     log_entries = []

@@ -205,6 +205,7 @@ Worked exemplar: `examples/pacer/doj_crypto_2023_239/build_lichtenstein_ddc_2023
 
 ## Related recipes
 
+- [qudt-quantities-and-units.md](qudt-quantities-and-units.md) — fiat valuations of wallet balances as QUDT quantities, not observations
 - [elder-fraud-impersonation.md](elder-fraud-impersonation.md) — government-impersonation call centers, money couriers, and cash/prepaid-card schemes without a crypto layer
 - [racketeering-enterprise.md](racketeering-enterprise.md) — when the theft-and-laundering operation is charged as a RICO enterprise (enterprise, member roles, predicate categories via the `rico` extension)
 - [threaded-messaging.md](threaded-messaging.md) — ordered chat threads and participants

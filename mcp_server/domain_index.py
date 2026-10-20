@@ -1493,6 +1493,43 @@ RECIPE_INDEX: list[dict[str, str]] = [
 ]
 
 # ---------------------------------------------------------------------------
+# Candidate recipes (docs/recipes/candidates/). They stay out of RECIPE_INDEX
+# and INDEX.md until promoted; routing returns them only as labeled
+# candidates whose extension must be loaded by name.
+# ---------------------------------------------------------------------------
+
+CANDIDATE_RECIPE_INDEX: list[dict[str, str]] = [
+    {
+        "title": "Unmanned Aircraft (UAS) Flight Log",
+        "description": "Model a drone flight log (ArduPilot DataFlash, MAVLink tlog, PX4 ULog, DJI flight record): the aircraft and its registration, the sortie, the per-fix trajectory, autopilot state transitions, and the control-link endpoints that commanded it.",
+        "keywords": "uas drone unmanned aircraft quadcopter flight log flight record dataflash mavlink tlog px4 ulog ardupilot dji mavic sortie autopilot waypoint home point altitude ground station control link remote id",
+        "file": "docs/recipes/candidates/uas-flight-log.md",
+        "extension": "uas",
+    },
+    {
+        "title": "Layered ESM Composition",
+        "description": "Compose several trajectories in one case without merging alphabets: sequential hand-offs, concurrent offenses, and shared factors.",
+        "keywords": "layered esm exploitation state machine trajectories composition coupling hand-off concurrent offenses offense path grooming transit trafficking forced labor",
+        "file": "docs/recipes/candidates/layered-esm-composition.md",
+        "extension": "layered",
+    },
+    {
+        "title": "Means action-space",
+        "description": "Record the feasible means for a stable goal and which one a trajectory walked, without claiming the actor optimized.",
+        "keywords": "means action-space feasible option constraint friction goal offender capability instrument selection alternatives",
+        "file": "docs/recipes/candidates/offense-means-set.md",
+        "extension": "means",
+    },
+    {
+        "title": "Expense benefit-at-expense",
+        "description": "Optional test over a trajectory: whether harm to a person is the source of the offender's gain.",
+        "keywords": "expense benefit anatomy exploitation assessment benefit source harm gain victim sourced",
+        "file": "docs/recipes/candidates/expense-benefit-at-expense.md",
+        "extension": "expense",
+    },
+]
+
+# ---------------------------------------------------------------------------
 # Mapping guide index — step-by-step guidance for common evidence sources
 # ---------------------------------------------------------------------------
 
@@ -1700,6 +1737,52 @@ MAPPING_GUIDE_INDEX: list[dict] = [
         ],
         "starter_kit": "docs/recipes/starter-tool-run.md",
         "code_skeleton": "tool = graph.create(Tool, name=..., version=...)\naction = graph.create(InvestigativeAction, name=..., instrument=tool)",
+    },
+    {
+        "source": "vehicle infotainment or telematics extraction",
+        "keywords": ["vehicle", "infotainment", "telematics", "berla", "ive", "head unit", "gnss", "gps track", "speed", "heading", "odometer", "ignition"],
+        "pattern": "Device + sosa:Platform hosting Device + sosa:Sensor; one sosa:Observation per reading with a qudt:QuantityValue result",
+        "classes": ["Device", "DeviceFacet", "ObservableObject", "FileFacet", "InvestigativeAction", "Tool"],
+        "anti_patterns": [
+            "Don't put a reading's number and unit in a description string — use qudt:value and qudt:hasUnit (look the unit up with lookup_qudt_units)",
+            "Don't make ignition, door, or pairing events SOSA observations — they are UCO events with native times",
+        ],
+        "starter_kit": "docs/recipes/sosa-sensor-observations.md",
+        "code_skeleton": "head_unit = graph.create(Device, has_facet=[DeviceFacet(...)]); graph.add_type(graph.get_id(head_unit), 'sosa:Platform')",
+    },
+    {
+        "source": "wearable or health-app export",
+        "keywords": ["wearable", "fitbit", "garmin", "smartwatch", "apple watch", "health app", "heart rate", "step count", "accelerometer", "sleep", "bpm"],
+        "pattern": "WearableDevice + sosa:Platform; sosa:Observation with qudt:QuantityValue result; daily totals carry sosa:phenomenonTime",
+        "classes": ["WearableDevice", "Device", "Person", "ObservableObject", "FileFacet", "InvestigativeAction"],
+        "anti_patterns": [
+            "Don't treat a daily step total as an instant reading — give it an OWL-Time interval phenomenonTime",
+            "Don't infer who wore the device from the account holder alone",
+        ],
+        "starter_kit": "docs/recipes/sosa-sensor-observations.md",
+        "code_skeleton": "band = graph.create(WearableDevice, ...); graph.add_type(graph.get_id(band), 'sosa:Platform')",
+    },
+    {
+        "source": "IoT or smart-home sensor log",
+        "keywords": ["iot", "smart home", "thermostat", "door sensor", "motion sensor", "doorbell", "temperature", "humidity", "sensor log"],
+        "pattern": "Device + sosa:Sensor per sensor; sosa:Observation per logged reading with a qudt:QuantityValue result; the room or door is the sosa:FeatureOfInterest",
+        "classes": ["Device", "DeviceFacet", "ObservableObject", "FileFacet", "Event", "InvestigativeAction"],
+        "anti_patterns": [
+            "Don't model an open/closed contact state as a quantity — it is an observation with a boolean or coded result, or an event",
+        ],
+        "starter_kit": "docs/recipes/sosa-sensor-observations.md",
+        "code_skeleton": "sensor = graph.create(Device, has_facet=[DeviceFacet(...)]); graph.add_type(graph.get_id(sensor), 'sosa:Sensor')",
+    },
+    {
+        "source": "drone or UAS flight log",
+        "keywords": ["drone", "uas", "unmanned aircraft", "flight log", "dataflash", "mavlink", "tlog", "ulog", "px4", "ardupilot", "dji"],
+        "pattern": "Candidate uas extension: aircraft, sortie, per-fix trajectory, autopilot transitions, control-link endpoints; altitude and speed values as QUDT quantities",
+        "classes": ["Device", "ObservableObject", "FileFacet", "InvestigativeAction", "Tool"],
+        "anti_patterns": [
+            "Don't assume the registered operator commanded the flight — model the control-link endpoints the log records",
+        ],
+        "starter_kit": "docs/recipes/candidates/uas-flight-log.md",
+        "code_skeleton": "Candidate recipe: load the extension by name, validate_graph(path, extensions=['uas'])",
     },
     {
         "source": "pcap network capture",

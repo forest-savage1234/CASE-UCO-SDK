@@ -92,6 +92,7 @@ case_validate --built-version case-1.5.0 \
 
 ## Related
 
+- [sosa-sensor-observations.md](sosa-sensor-observations.md) — GNSS readings whose locations carry geometries
 - [location.md](location.md) — UCO location facets
 - [cell-site.md](cell-site.md) — tower-derived positions
 - [cargo-theft-route-staging.md](cargo-theft-route-staging.md) — route deviation

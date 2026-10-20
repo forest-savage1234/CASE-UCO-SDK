@@ -68,6 +68,7 @@ graph.write("location.jsonld")
 
 ## Related
 
+- [sosa-sensor-observations.md](sosa-sensor-observations.md) — GNSS fixes with speed and heading recorded as sensor observations
 - [cargo-theft-route-staging.md](cargo-theft-route-staging.md) — routes, geofence deviations, and staging locations in freight theft
 - [cell-site.md](cell-site.md) — tower-derived locations
 - [exif-data.md](exif-data.md) — GPS embedded in image metadata

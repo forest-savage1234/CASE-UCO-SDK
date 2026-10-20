@@ -95,7 +95,11 @@ from graph_validator import (
     report_to_dict as _validation_report_to_dict,
     validate_graph_file as _validate_graph_file,
 )
-from cac_content_router import route_cac_content as _route_cac_content, search_recipes as _search_recipes
+from cac_content_router import (
+    MAX_RECIPE_CONTENT_CHARS,
+    route_cac_content as _route_cac_content,
+    search_recipes as _search_recipes,
+)
 from investigation_router import route_investigation_content as _route_investigation_content
 from apple_acquisition import (
     TOOL_NAME as APPLE_PACKAGE_TOOL_NAME,
@@ -1108,19 +1112,39 @@ def get_recipe(scenario: str) -> dict | None:
     q = scenario.lower()
     best_match = None
     best_score = 0
+    best_words = 0
 
     for recipe in RECIPE_INDEX:
-        score = 0
+        score = words = 0
         text = f"{recipe['title']} {recipe['description']} {recipe['keywords']}".lower()
+        name = f"{recipe['title']} {recipe['file']}".lower()
         for word in q.split():
             if word in text:
                 score += 1
+                words += 1
+                if word in name:
+                    score += 1
         if score > best_score:
-            best_score = score
+            best_score, best_words = score, words
             best_match = recipe
 
-    if best_match is None or best_score == 0:
-        return None
+    import recipe_ranking
+
+    candidates = recipe_ranking.rank_candidate_recipes(scenario)
+    candidate_hit = None
+    if (
+        best_match is None
+        or best_score == 0
+        or (candidates and len(candidates[0]["matched_terms"]) > best_words)
+    ):
+        if not candidates:
+            return None
+        candidate_hit = candidates[0]
+        best_match = {
+            "title": candidate_hit["title"],
+            "description": candidate_hit["rationale"],
+            "file": candidate_hit["file"],
+        }
 
     content = None
     try:
@@ -1128,14 +1152,23 @@ def get_recipe(scenario: str) -> dict | None:
     except OSError:
         pass  # recipe file missing on disk — return metadata without content
 
-    return {
+    result = {
         "title": best_match["title"],
         "description": best_match["description"],
         "file": best_match["file"],
-        "content": content[:8000] if content else None,
-        "truncated": len(content) > 8000 if content else False,
+        "content": content[:MAX_RECIPE_CONTENT_CHARS] if content else None,
+        "truncated": len(content) > MAX_RECIPE_CONTENT_CHARS if content else False,
         "tip": "This recipe contains complete code examples and JSON-LD output.",
     }
+    if candidate_hit is not None:
+        result.update(
+            status="candidate",
+            extension=candidate_hit["extension"],
+            note=candidate_hit["note"],
+        )
+    elif candidates:
+        result["candidate_recipes"] = candidates
+    return result
 
 
 @mcp.tool
@@ -1148,12 +1181,26 @@ def get_recipes(
 
     Unlike get_recipe (single best match), returns ranked matches so agents
     can compose multi-domain graphs (e.g., grooming + CyberTip + task force).
+    Candidate recipes (docs/recipes/candidates/) that match come back in
+    ``candidate_recipes``, labeled with the extension to load by name.
 
     Examples: get_recipes("grooming cybertip"), get_recipes("trafficking icac"),
               get_recipes("cac rescue", include_content=True)
     """
+    import recipe_ranking
+
     matches = _search_recipes(scenario, limit=max(1, min(limit, 10)), include_content=include_content)
-    return {
+    candidates = recipe_ranking.rank_candidate_recipes(scenario)
+    if include_content:
+        for hit in candidates:
+            try:
+                content = (PROJECT_ROOT / hit["file"]).read_text(encoding="utf-8")
+            except OSError:
+                hit["content"], hit["truncated"] = None, False
+                continue
+            hit["content"] = content[:MAX_RECIPE_CONTENT_CHARS]
+            hit["truncated"] = len(content) > MAX_RECIPE_CONTENT_CHARS
+    result = {
         "query": scenario,
         "match_count": len(matches),
         "recipes": matches,
@@ -1162,6 +1209,9 @@ def get_recipes(
             "to detect domains and return multiple CAC recipes with validation guidance."
         ),
     }
+    if candidates:
+        result["candidate_recipes"] = candidates
+    return result
 
 
 @mcp.tool

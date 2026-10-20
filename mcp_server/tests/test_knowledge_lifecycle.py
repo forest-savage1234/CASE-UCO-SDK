@@ -453,12 +453,26 @@ def _recipe_workspace(tmp_path: Path) -> Path:
     mcp_dir = tmp_path / "mcp_server"
     mcp_dir.mkdir()
     (mcp_dir / "domain_index.py").write_text(
+        'DOMAIN_INDEX: list[dict[str, str]] = [\n'
+        '    {\n'
+        '        "domain": "unrelated",\n'
+        '    },\n'
+        ']\n'
         'RECIPE_INDEX: list[dict[str, str]] = [\n'
         '    {\n'
         '        "title": "Working with Extensions",\n'
         '        "description": "x",\n'
         '        "keywords": "x",\n'
         '        "file": "docs/recipes/extensions.md",\n'
+        '    },\n'
+        ']\n'
+        'CANDIDATE_RECIPE_INDEX: list[dict[str, str]] = [\n'
+        '    {\n'
+        '        "title": "Synthetic Learned Pattern",\n'
+        '        "description": "x",\n'
+        '        "keywords": "synthetic learned pattern",\n'
+        '        "file": "docs/recipes/candidates/synthetic-learned-pattern.md",\n'
+        '        "extension": "synthetic",\n'
         '    },\n'
         ']\n',
         encoding="utf-8",
@@ -515,6 +529,8 @@ def test_promote_recipe_moves_and_registers(tmp_path, monkeypatch):
         e["file"] == "docs/recipes/synthetic-learned-pattern.md"
         for e in namespace["RECIPE_INDEX"]
     )
+    assert namespace["CANDIDATE_RECIPE_INDEX"] == []
+    assert namespace["DOMAIN_INDEX"] == [{"domain": "unrelated"}]
 
 
 def test_promote_recipe_rejects_ontology_lint_failure(tmp_path, monkeypatch):
@@ -671,12 +687,15 @@ def test_deprecate_recipe_roundtrip(tmp_path, monkeypatch):
     index_md = (root / "docs/recipes/INDEX.md").read_text(encoding="utf-8")
     assert "(synthetic-learned-pattern.md)" not in index_md
     domain_index = (root / "mcp_server/domain_index.py").read_text(encoding="utf-8")
-    assert "synthetic-learned-pattern" not in domain_index
     namespace: dict = {}
     exec(domain_index, namespace)  # noqa: S102 — test-authored content
     assert all(
-        e["file"] != "docs/recipes/synthetic-learned-pattern.md"
-        for e in namespace["RECIPE_INDEX"]
+        "synthetic-learned-pattern" not in e["file"] for e in namespace["RECIPE_INDEX"]
     )
+    assert [e["file"] for e in namespace["RECIPE_INDEX"]] == ["docs/recipes/extensions.md"]
+    assert [e["file"] for e in namespace["CANDIDATE_RECIPE_INDEX"]] == [
+        "docs/recipes/candidates/synthetic-learned-pattern.md"
+    ]
+    assert namespace["DOMAIN_INDEX"] == [{"domain": "unrelated"}]
     log = json.loads((root / "docs/recipes/promotion-log.json").read_text(encoding="utf-8"))
     assert log[-1]["action"] == "deprecate"

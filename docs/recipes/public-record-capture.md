@@ -183,6 +183,7 @@ The only results are `sh:Info` suggestions that UcoThing IRIs end in a UUID.
 
 ## Related
 
+- [qudt-quantities-and-units.md](qudt-quantities-and-units.md) — numbers with units in a captured record (weather readings, measurements)
 - [starter-filesystem-report.md](starter-filesystem-report.md) — file, hash, and path facets
 - [starter-tool-run.md](starter-tool-run.md) — when the collector names a tool
 - [chain-of-custody.md](chain-of-custody.md) — provenance records

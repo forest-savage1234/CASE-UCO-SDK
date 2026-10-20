@@ -112,6 +112,7 @@ case_validate --built-version case-1.5.0 \
 
 ## Related
 
+- [sosa-sensor-observations.md](sosa-sensor-observations.md) — `sosa:phenomenonTime` intervals for readings such as daily totals
 - [existence-intervals.md](existence-intervals.md) — parallel temporal stacks (OWL-Time, gUFO, BFO)
 - [event.md](event.md) — authentication and system events
 - [forensic-lifecycle.md](forensic-lifecycle.md) — phase ordering

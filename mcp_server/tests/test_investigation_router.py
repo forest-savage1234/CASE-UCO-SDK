@@ -275,17 +275,19 @@ def test_unseen_data_returns_extension_gap_guidance() -> None:
 
 
 def test_abstain_includes_ranked_recipe_hits() -> None:
+    # Verbatim repro from issue #159.
     text = (
-        "Abstract synthetic. We present a Monte Carlo simulation of Higgs boson "
-        "production at a center-of-mass energy of 13 TeV. Event yields are estimated "
-        "with samples. Detector acceptance and luminosity measurement are reported. "
+        "Abstract synthetic. We present a Monte Carlo simulation of Higgs boson\n"
+        "production at a center-of-mass energy of 13 TeV. Event yields are estimated\n"
+        "with 10 to the 6 samples. Detector acceptance and luminosity are reported.\n"
         "No human subjects were involved."
     )
     payload = route_investigation_content(PROJECT_ROOT, content_text=text)
     assert payload["matched_families"] == []
     assert payload["routing_confidence"]["level"] == "abstain"
     files = [hit["file"] for hit in payload["ranked_recipe_hits"]]
-    assert "docs/recipes/qudt-quantities-and-units.md" in files
+    assert files[0] == "docs/recipes/qudt-quantities-and-units.md"
+    assert payload["measurement_signals"]["quantities"][0]["text"] == "13 TeV"
     assert all("score" in hit and hit["rationale"] for hit in payload["ranked_recipe_hits"])
 
 

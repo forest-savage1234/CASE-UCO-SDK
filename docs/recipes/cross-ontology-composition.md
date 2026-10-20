@@ -169,6 +169,8 @@ validate_graph("cac-composite.jsonld", extensions=["cac"],
 
 ## Related
 
+- [qudt-quantities-and-units.md](qudt-quantities-and-units.md) — the QUDT profile: numbers with units and quantity kinds
+- [sosa-sensor-observations.md](sosa-sensor-observations.md) — the SOSA/SSN profiles: sensor readings with QUDT results
 - [extensions.md](extensions.md) — extension structure and strict concept coverage
 - [cross-domain-extensions.md](cross-domain-extensions.md) — redirect stub (CAC/AEO quick start)
 - [legal-process-modeling.md](legal-process-modeling.md) — `legalproc` composition

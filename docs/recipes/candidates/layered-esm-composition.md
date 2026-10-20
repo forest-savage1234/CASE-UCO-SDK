@@ -1,7 +1,7 @@
 # Layered ESM Composition
 
 > Candidate recipe (see [candidates/README.md](README.md)); not in the [Recipe Index](../INDEX.md) until the extension is promoted. Extension docs: [`extensions/layered/`](../../../extensions/layered/).
-> Related: [offense-means-set.md](offense-means-set.md), [expense-benefit-at-expense.md](expense-benefit-at-expense.md).
+> Related: [offense-means-set.md](offense-means-set.md), [expense-benefit-at-expense.md](expense-benefit-at-expense.md), [cross-ontology-composition.md](../cross-ontology-composition.md) (principle 6: compose offense-conduct extensions only on evidence), [cac-trafficking-recruitment-network.md](../cac-trafficking-recruitment-network.md), [elder-fraud-impersonation.md](../elder-fraud-impersonation.md).
 
 Compose **multiple** `traj:Trajectory` machines into one case-level
 `lay:ExploitationStateMachine` — sequential hand-offs, concurrent/parallel

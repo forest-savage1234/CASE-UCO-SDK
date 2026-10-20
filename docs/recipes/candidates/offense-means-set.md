@@ -1,7 +1,7 @@
 # Means action-space
 
 > Candidate recipe (see [candidates/README.md](README.md)); not in the [Recipe Index](../INDEX.md) until the extension is promoted. Extension: [`extensions/means/`](../../../extensions/means/).
-> Related: [layered-esm-composition.md](layered-esm-composition.md), [expense-benefit-at-expense.md](expense-benefit-at-expense.md).
+> Related: [layered-esm-composition.md](layered-esm-composition.md), [expense-benefit-at-expense.md](expense-benefit-at-expense.md), [cross-ontology-composition.md](../cross-ontology-composition.md).
 
 Record the action-space a walked `traj:Transition` was chosen from. Use this when one stable goal has more than one instrument, and the graph needs to say which one was walked without claiming the actor optimized. The extension name is `means`.
 
