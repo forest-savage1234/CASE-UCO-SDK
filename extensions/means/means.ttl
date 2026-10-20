@@ -1,0 +1,216 @@
+# Means extension — action-space for a stable goal (T-Box)
+#
+# Sits beside traj:Transition. The transition records the edge that was
+# walked and carries the abused affordance on uco-action:instrument.
+# This vocabulary is the action-space at a state: the stable goal, the
+# options available there, an actor's capability to use an option, a
+# constraint that removes an option, and an inferred assessment of
+# friction and feasibility. The local name is means.
+#
+# It does not record a reward, a Bellman value, or a utility float.
+# selectionRule "not_modeled" is the conformant way to say the graph has
+# not claimed how the option was picked.
+#
+# OffenderCapability is a local stand-in for the Capability class proposed
+# in UCO #682. It is not toolcap:BenchmarkObservation and it is not
+# cacontology-platforms:PlatformAffordance. Re-parent it onto that UCO
+# class if #682 is adopted. Do not file a second capability proposal.
+
+@prefix means: <http://example.org/ontology/means/> .
+@prefix traj: <http://example.org/ontology/trajectories/> .
+@prefix uco-core: <https://ontology.unifiedcyberontology.org/uco/core/> .
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+<http://example.org/ontology/means>
+	a owl:Ontology ;
+	rdfs:label "Means action-space"@en ;
+	rdfs:comment "The action-space at a state: the menu of feasible means for a stable goal, layered beside traj:Transition and usable from a lay:ExploitationStateMachine. An option is in that action-space when capability and the open affordance both admit it and no active constraint removes it. Observed options stay distinct from inferred friction assessments and selections. The local name is means so the vocabulary does not imply an optimal pick. See Cornish, Procedural Analysis of Offending, Crime Prevention Studies 3 (1994), https://popcenter.asu.edu/sites/default/files/library/crimeprevention/volume_03/06_cornish.pdf and UCO issue 682, https://github.com/ucoProject/UCO/issues/682."@en ;
+	dcterms:source
+		"https://popcenter.asu.edu/sites/default/files/library/crimeprevention/volume_03/06_cornish.pdf"^^xsd:anyURI ,
+		"https://github.com/ucoProject/UCO/issues/682"^^xsd:anyURI ;
+	owl:imports
+		<http://example.org/ontology/trajectories> ,
+		<https://ontology.unifiedcyberontology.org/uco/core/> .
+
+#################################################################
+# Classes
+#################################################################
+
+means:Goal
+	a owl:Class ;
+	rdfs:subClassOf uco-core:UcoObject ;
+	owl:disjointWith means:Option , means:OptionAssessment , means:Selection ;
+	rdfs:label "Goal"@en ;
+	rdfs:comment "A stable end an actor is pursuing. Distinct from traj:goalRealizingTransition, which is the edge where a benefit-at-expense test is applied, and distinct from an offense-type alphabet. Several options may serve one goal, which is how an instrument can be replaced without changing the goal. See Cornish 1994, https://popcenter.asu.edu/sites/default/files/library/crimeprevention/volume_03/06_cornish.pdf."@en .
+
+means:Option
+	a owl:Class ;
+	rdfs:subClassOf uco-core:UcoObject ;
+	owl:disjointWith means:Goal , means:OptionAssessment , means:Selection , means:Constraint ;
+	rdfs:label "Option"@en ;
+	rdfs:comment "One means in the action-space at a traj:State for a means:Goal, whether or not a trajectory walked it. The options available at a state are that state's action-space. The instrument is an affordance or tool. When the option was walked, enactedTransition points at that traj:Transition, whose uco-action:Action still carries the same instrument on uco-action:instrument. Observed options cite prov:wasDerivedFrom. See Cornish 1994, https://popcenter.asu.edu/sites/default/files/library/crimeprevention/volume_03/06_cornish.pdf."@en .
+
+means:OptionAssessment
+	a owl:Class ;
+	rdfs:subClassOf uco-core:UcoObject ;
+	owl:disjointWith means:Goal , means:Option , means:Selection , traj:PhaseAssertion ;
+	rdfs:label "Option assessment"@en ;
+	rdfs:comment "INFERRED reading of one option's friction and feasibility. identityFriction, delayBurden, detectionExposure, and resourceCost are controlled levels (low, moderate, high, not_in_source), not utilities and not traj:transitionProbability. feasibility is feasible or removed. Must carry prov:wasGeneratedBy. A removed option is the result of a means:Constraint. Friction leaves the option on the menu. See Cornish 1994, https://popcenter.asu.edu/sites/default/files/library/crimeprevention/volume_03/06_cornish.pdf."@en .
+
+means:OffenderCapability
+	a owl:Class ;
+	rdfs:subClassOf uco-core:UcoObject ;
+	owl:disjointWith means:OptionAssessment , means:Selection ;
+	rdfs:label "Offender capability"@en ;
+	rdfs:comment "What a particular actor can bring to bear on an option: access, skill, a co-actor, or a resource. Local stand-in for the Capability class in UCO issue 682 (https://github.com/ucoProject/UCO/issues/682), which already covers a person or threat actor's ability to do something. Not toolcap:BenchmarkObservation, not a forensic-tool module, and not cacontology-platforms:PlatformAffordance (that class is the platform feature, which belongs on usesInstrument)."@en .
+
+means:Constraint
+	a owl:Class ;
+	rdfs:subClassOf uco-core:UcoObject ;
+	owl:disjointWith means:Option , means:Selection ;
+	rdfs:label "Constraint"@en ;
+	rdfs:comment "A condition that takes an option out of the action-space: a wall, a capable guardian, or an access denial. Distinct from friction, which is an OptionAssessment level and leaves the option in the action-space, and distinct from traj:terminalPolarity disrupted, which records that an observed trajectory was cut off after it was already on an edge. See Cornish 1994 on situational prevention, https://popcenter.asu.edu/sites/default/files/library/crimeprevention/volume_03/06_cornish.pdf."@en .
+
+means:Selection
+	a owl:Class ;
+	rdfs:subClassOf uco-core:UcoObject ;
+	owl:disjointWith means:Goal , means:Option , means:OptionAssessment , traj:PhaseAssertion ;
+	rdfs:label "Selection"@en ;
+	rdfs:comment "INFERRED record that one option was treated as chosen from a menu of at least two. selectionRule is not_modeled, satisficing, discrete_choice, or opportunistic. not_modeled is conformant and is the value to use when the graph must not claim a Bellman policy or a utility. No reward property is defined. Must carry prov:wasGeneratedBy. See Cornish 1994, https://popcenter.asu.edu/sites/default/files/library/crimeprevention/volume_03/06_cornish.pdf."@en .
+
+#################################################################
+# Object properties
+#################################################################
+
+means:pursuedBy
+	a owl:ObjectProperty ;
+	rdfs:domain means:Goal ;
+	rdfs:range uco-core:UcoObject ;
+	rdfs:label "pursued by"@en ;
+	rdfs:comment "The actor who holds this goal."@en .
+
+means:servesGoal
+	a owl:ObjectProperty ;
+	rdfs:domain means:Option ;
+	rdfs:range means:Goal ;
+	rdfs:label "serves goal"@en ;
+	rdfs:comment "The stable goal this option is a means for. Several options may serve one goal."@en .
+
+means:availableAt
+	a owl:ObjectProperty ;
+	rdfs:domain means:Option ;
+	rdfs:range traj:State ;
+	rdfs:label "available at"@en ;
+	rdfs:comment "A state at which this option is on the menu. An option may be available at more than one state."@en .
+
+means:usesInstrument
+	a owl:ObjectProperty ;
+	rdfs:domain means:Option ;
+	rdfs:range uco-core:UcoObject ;
+	rdfs:label "uses instrument"@en ;
+	rdfs:comment "The affordance or tool this option uses. When the option is walked, the enacted action's uco-action:instrument should be this same object."@en .
+
+means:enactedTransition
+	a owl:ObjectProperty ;
+	rdfs:domain means:Option ;
+	rdfs:range traj:Transition ;
+	rdfs:label "enacted transition"@en ;
+	rdfs:comment "The traj:Transition that walked this option. Omit when the option was available and was not the one walked."@en .
+
+means:assessesOption
+	a owl:ObjectProperty ;
+	rdfs:domain means:OptionAssessment ;
+	rdfs:range means:Option ;
+	rdfs:label "assesses option"@en ;
+	rdfs:comment "The option this inferred assessment describes."@en .
+
+means:possessedBy
+	a owl:ObjectProperty ;
+	rdfs:domain means:OffenderCapability ;
+	rdfs:range uco-core:UcoObject ;
+	rdfs:label "possessed by"@en ;
+	rdfs:comment "The actor who has this capability."@en .
+
+means:enablesOption
+	a owl:ObjectProperty ;
+	rdfs:domain means:OffenderCapability ;
+	rdfs:range means:Option ;
+	rdfs:label "enables option"@en ;
+	rdfs:comment "An option this capability puts on that actor's menu."@en .
+
+means:removesOption
+	a owl:ObjectProperty ;
+	rdfs:domain means:Constraint ;
+	rdfs:range means:Option ;
+	rdfs:label "removes option"@en ;
+	rdfs:comment "An option this constraint takes off the menu. The matching OptionAssessment should say feasibility removed."@en .
+
+means:selectsOption
+	a owl:ObjectProperty ;
+	rdfs:domain means:Selection ;
+	rdfs:range means:Option ;
+	rdfs:label "selects option"@en ;
+	rdfs:comment "The option this selection treats as chosen. It must also appear as means:amongOptions."@en .
+
+means:amongOptions
+	a owl:ObjectProperty ;
+	rdfs:domain means:Selection ;
+	rdfs:range means:Option ;
+	rdfs:label "among options"@en ;
+	rdfs:comment "One member of the menu. A selection names at least two, including the chosen option."@en .
+
+#################################################################
+# Datatype properties
+#################################################################
+
+means:identityFriction
+	a owl:DatatypeProperty ;
+	rdfs:domain means:OptionAssessment ;
+	rdfs:range xsd:string ;
+	rdfs:label "identity friction"@en ;
+	rdfs:comment "How much identifying trace the option imposes, as an analyst level: low, moderate, high, or not_in_source. Not a measured quantity and not a utility."@en .
+
+means:delayBurden
+	a owl:DatatypeProperty ;
+	rdfs:domain means:OptionAssessment ;
+	rdfs:range xsd:string ;
+	rdfs:label "delay burden"@en ;
+	rdfs:comment "How much delay the option imposes, as an analyst level: low, moderate, high, or not_in_source."@en .
+
+means:detectionExposure
+	a owl:DatatypeProperty ;
+	rdfs:domain means:OptionAssessment ;
+	rdfs:range xsd:string ;
+	rdfs:label "detection exposure"@en ;
+	rdfs:comment "How exposed the option is to detection, as an analyst level: low, moderate, high, or not_in_source."@en .
+
+means:resourceCost
+	a owl:DatatypeProperty ;
+	rdfs:domain means:OptionAssessment ;
+	rdfs:range xsd:string ;
+	rdfs:label "resource cost"@en ;
+	rdfs:comment "What the option costs the actor in money, labor, or co-actors, as an analyst level: low, moderate, high, or not_in_source."@en .
+
+means:feasibility
+	a owl:DatatypeProperty ;
+	rdfs:domain means:OptionAssessment ;
+	rdfs:range xsd:string ;
+	rdfs:label "feasibility"@en ;
+	rdfs:comment "Whether the option is still on the menu: feasible, or removed by a means:Constraint. Feasible options may still carry high friction."@en .
+
+means:constraintKind
+	a owl:DatatypeProperty ;
+	rdfs:domain means:Constraint ;
+	rdfs:range xsd:string ;
+	rdfs:label "constraint kind"@en ;
+	rdfs:comment "wall, guardian, or access_denial. wall makes the option infeasible in the current environment. guardian is a person or control watching the target or place. access_denial is a missing permission, account, or credential."@en .
+
+means:selectionRule
+	a owl:DatatypeProperty ;
+	rdfs:domain means:Selection ;
+	rdfs:range xsd:string ;
+	rdfs:label "selection rule"@en ;
+	rdfs:comment "How the choice is being interpreted: not_modeled, satisficing, discrete_choice, or opportunistic. not_modeled records the menu and the walked option without claiming optimality. This vocabulary defines no reward."@en .

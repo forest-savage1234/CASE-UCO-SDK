@@ -1,0 +1,156 @@
+{
+  "extension": "layered",
+  "modules": ["layered", "layered-vocab"],
+  "classes": {
+    "ExploitationStateMachine": {
+      "iri": "http://example.org/ontology/layered/ExploitationStateMachine",
+      "module": "layered",
+      "description": "Case-level composition of one or more traj:Trajectory machines into a layered Exploitation State Machine without flattening alphabets.",
+      "parents": ["UcoObject"],
+      "is_facet": false,
+      "properties": [
+        {"name": "hasLayer", "type": "Layer", "required": true},
+        {"name": "hasCoupling", "type": "Coupling", "required": false},
+        {"name": "hasFactor", "type": "UcoObject", "required": false},
+        {"name": "hasGoal", "type": "UcoObject", "required": false},
+        {"name": "hasExpenseAssessment", "type": "UcoObject", "required": false},
+        {"name": "hasAggregateModel", "type": "StateMachineModel", "required": false},
+        {"name": "concernsSubject", "type": "UcoObject", "required": false},
+        {"name": "compositionPattern", "type": "string", "required": true},
+        {"name": "completeness", "type": "string", "required": true}
+      ],
+      "source": "layered"
+    },
+    "Layer": {
+      "iri": "http://example.org/ontology/layered/Layer",
+      "module": "layered",
+      "description": "One machine slot in an ESM binding exactly one traj:Trajectory.",
+      "parents": ["UcoObject"],
+      "is_facet": false,
+      "properties": [
+        {"name": "occupiesTrajectory", "type": "Trajectory", "required": true},
+        {"name": "hasMachineModel", "type": "StateMachineModel", "required": false},
+        {"name": "domainAlphabet", "type": "ConceptScheme", "required": false},
+        {"name": "layerIndex", "type": "nonNegativeInteger", "required": true},
+        {"name": "coverage", "type": "string", "required": true},
+        {"name": "concurrencyGroup", "type": "string", "required": false}
+      ],
+      "source": "layered"
+    },
+    "Coupling": {
+      "iri": "http://example.org/ontology/layered/Coupling",
+      "module": "layered",
+      "description": "First-class inter-layer ESM coupling (enables, temporallyOverlaps, leverage, shared factors).",
+      "parents": ["UcoObject"],
+      "is_facet": false,
+      "properties": [
+        {"name": "couplingKind", "type": "string", "required": true},
+        {"name": "fromLayer", "type": "Layer", "required": false},
+        {"name": "toLayer", "type": "Layer", "required": false},
+        {"name": "fromEndpoint", "type": "UcoObject", "required": false},
+        {"name": "toEndpoint", "type": "UcoObject", "required": false},
+        {"name": "realizedBy", "type": "Relationship", "required": false},
+        {"name": "couplingInterval", "type": "ProperInterval", "required": false}
+      ],
+      "source": "layered"
+    },
+    "a_material_induce": {
+      "iri": "http://example.org/ontology/layered/a_material_induce",
+      "module": "layered-vocab",
+      "description": "Material inducement technique. techniqueID LAY.T1.",
+      "parents": ["Action"],
+      "is_facet": false,
+      "properties": [],
+      "source": "layered"
+    },
+    "a_force_sexual_activity": {
+      "iri": "http://example.org/ontology/layered/a_force_sexual_activity",
+      "module": "layered-vocab",
+      "description": "Force sexual activity with a child. techniqueID LAY.T2.",
+      "parents": ["Action"],
+      "is_facet": false,
+      "properties": [],
+      "source": "layered"
+    },
+    "a_produce_csam": {
+      "iri": "http://example.org/ontology/layered/a_produce_csam",
+      "module": "layered-vocab",
+      "description": "Produce/demand CSAM as migratory leverage. techniqueID LAY.T3.",
+      "parents": ["Action"],
+      "is_facet": false,
+      "properties": [],
+      "source": "layered"
+    },
+    "a_bring_to_us": {
+      "iri": "http://example.org/ontology/layered/a_bring_to_us",
+      "module": "layered-vocab",
+      "description": "Bring child victims into the United States. techniqueID LAY.T4.",
+      "parents": ["Action"],
+      "is_facet": false,
+      "properties": [],
+      "source": "layered"
+    },
+    "a_harbor_aliens": {
+      "iri": "http://example.org/ontology/layered/a_harbor_aliens",
+      "module": "layered-vocab",
+      "description": "Harbor in offender-controlled housing. techniqueID LAY.T5.",
+      "parents": ["Action"],
+      "is_facet": false,
+      "properties": [],
+      "source": "layered"
+    },
+    "a_force_child_sex_acts": {
+      "iri": "http://example.org/ontology/layered/a_force_child_sex_acts",
+      "module": "layered-vocab",
+      "description": "Force child sexual acts (sex trafficking). techniqueID LAY.T6.",
+      "parents": ["Action"],
+      "is_facet": false,
+      "properties": [],
+      "source": "layered"
+    },
+    "a_threaten_ice_and_exposure": {
+      "iri": "http://example.org/ontology/layered/a_threaten_ice_and_exposure",
+      "module": "layered-vocab",
+      "description": "Threaten immigration contact and CSAM exposure. techniqueID LAY.T7.",
+      "parents": ["Action"],
+      "is_facet": false,
+      "properties": [],
+      "source": "layered"
+    },
+    "a_digital_surveillance_control": {
+      "iri": "http://example.org/ontology/layered/a_digital_surveillance_control",
+      "module": "layered-vocab",
+      "description": "Require location and social-media password access. techniqueID LAY.T8.",
+      "parents": ["Action"],
+      "is_facet": false,
+      "properties": [],
+      "source": "layered"
+    }
+  },
+  "vocabs": {
+    "GroomingPhaseScheme": {
+      "iri": "http://example.org/ontology/layered/GroomingPhaseScheme",
+      "description": "Targeting, MaterialDependency, Sexualization, CSAMLeverage"
+    },
+    "ChildSexTraffickingPhaseScheme": {
+      "iri": "http://example.org/ontology/layered/ChildSexTraffickingPhaseScheme",
+      "description": "PlacementControl, ForcedSexualExploitation"
+    },
+    "TransitHarborPhaseScheme": {
+      "iri": "http://example.org/ontology/layered/TransitHarborPhaseScheme",
+      "description": "CrossBorderTransit, Harboring"
+    },
+    "compositionPattern": {
+      "description": "sequential | concurrent | parallel | hybrid"
+    },
+    "completeness": {
+      "description": "full | partial"
+    },
+    "coverage": {
+      "description": "full | partial"
+    },
+    "couplingKind": {
+      "description": "enables | providesLeverageFor | produces | sharesFactor | temporallyOverlaps | feeds"
+    }
+  }
+}

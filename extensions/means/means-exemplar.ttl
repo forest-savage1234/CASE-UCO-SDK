@@ -1,0 +1,333 @@
+# Choice exemplar — one goal, two collection instruments.
+# United States v. Oscar Manuel Castanos Garcia, et al., No. 1:24-cr-10138-LTS
+# (D. Mass.). Public sources, also used by extensions/elder-fraud:
+#   PR  https://www.justice.gov/usao-ma/pr/operators-transnational-elder-fraud-scheme-plead-guilty
+#   Aff https://www.justice.gov/usao-ma/media/1410886/dl?inline
+#
+# The affidavit describes two ways the same cash-collection goal was carried
+# out: a rideshare handoff in Agawam (February 2023) and a UPS shipment toward
+# Attleboro (instruction September 2022; pickup arrested October 2022).
+# Friction levels are an analyst reading of those methods. selectionRule is
+# not_modeled. No reward is asserted. Month bounds are used because the
+# public write-up of this exemplar does not pin the events to a day.
+
+@prefix means: <http://example.org/ontology/means/> .
+@prefix ex: <http://example.org/kb/means/castanos/> .
+@prefix traj: <http://example.org/ontology/trajectories/> .
+@prefix lay: <http://example.org/ontology/layered/> .
+@prefix uco-core: <https://ontology.unifiedcyberontology.org/uco/core/> .
+@prefix uco-action: <https://ontology.unifiedcyberontology.org/uco/action/> .
+@prefix uco-identity: <https://ontology.unifiedcyberontology.org/uco/identity/> .
+@prefix time: <http://www.w3.org/2006/time#> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+#################################################################
+# Actors and sources
+#################################################################
+
+ex:person-castanos-garcia
+	a uco-identity:Person ;
+	uco-core:name "Oscar Manuel Castanos Garcia" ;
+	uco-core:description "Lead operator of the call centers. The collection goal is attributed to the operation he directed. Source: Aff." .
+
+ex:person-baez-santana
+	a uco-identity:Person ;
+	uco-core:name "Andry Joel Baez Santana" ;
+	uco-core:description "Runner who directed a Lyft driver to an elderly victim's address in Agawam, Massachusetts, in February 2023. Source: Aff." .
+
+ex:person-tavarez-jimenez
+	a uco-identity:Person ;
+	uco-core:name "Ransel Starlin Tavarez Jimenez" ;
+	uco-core:description "Collected a UPS cash package at the first of two Attleboro addresses and was arrested attempting to collect the second. Source: Aff." .
+
+ex:evidence-payment-direction
+	a uco-core:UcoObject ;
+	uco-core:name "Closer direction to send cash" ;
+	uco-core:description "Closers directed victims to send or deliver cash. The affidavit then describes rideshare handoff and commercial-carrier shipment as the methods used. Source: Aff." .
+
+ex:evidence-agawam
+	a uco-core:UcoObject ;
+	uco-core:name "Agawam rideshare cash handoff, February 2023" ;
+	uco-core:description "Baez Santana directed a Lyft driver to the victim's Agawam address. The driver delivered the cash package. Source: Aff." .
+
+ex:evidence-attleboro
+	a uco-core:UcoObject ;
+	uco-core:name "Attleboro UPS cash shipment, September–October 2022" ;
+	uco-core:description "A Texas victim was instructed in September 2022 to ship cash via UPS to two Attleboro addresses. Tavarez Jimenez collected the first package and was arrested in October 2022 attempting to collect the second. Source: Aff." .
+
+#################################################################
+# States
+#################################################################
+
+ex:state-proceeds-collection
+	a traj:State ;
+	uco-core:name "Proceeds collection" ;
+	uco-core:description "The phase in which a directed cash package is physically obtained." .
+
+ex:state-collected
+	a traj:State ;
+	uco-core:name "Collected" ;
+	uco-core:description "The cash package reached the runners." .
+
+ex:state-disrupted
+	a traj:State ;
+	uco-core:name "Disrupted" ;
+	uco-core:description "An intervention ended the collection before the modeled endpoint." .
+
+#################################################################
+# Intervals (month bounds)
+#################################################################
+
+ex:interval-agawam-collection
+	a time:ProperInterval ;
+	time:hasBeginning ex:instant-agawam-begin ;
+	time:hasEnd ex:instant-agawam-end .
+
+ex:instant-agawam-begin
+	a time:Instant ;
+	time:inXSDDateTimeStamp "2023-02-01T00:00:00Z"^^xsd:dateTimeStamp .
+
+ex:instant-agawam-end
+	a time:Instant ;
+	time:inXSDDateTimeStamp "2023-02-28T23:59:59Z"^^xsd:dateTimeStamp .
+
+ex:interval-attleboro-collection
+	a time:ProperInterval ;
+	time:hasBeginning ex:instant-attleboro-begin ;
+	time:hasEnd ex:instant-attleboro-mid .
+
+ex:instant-attleboro-begin
+	a time:Instant ;
+	time:inXSDDateTimeStamp "2022-09-01T00:00:00Z"^^xsd:dateTimeStamp .
+
+ex:instant-attleboro-mid
+	a time:Instant ;
+	time:inXSDDateTimeStamp "2022-09-30T23:59:59Z"^^xsd:dateTimeStamp .
+
+ex:interval-attleboro-disrupted
+	a time:ProperInterval ;
+	time:hasBeginning ex:instant-attleboro-mid ;
+	time:hasEnd ex:instant-attleboro-end .
+
+ex:instant-attleboro-end
+	a time:Instant ;
+	time:inXSDDateTimeStamp "2022-10-31T23:59:59Z"^^xsd:dateTimeStamp .
+
+ex:confidence-agawam-collection
+	a uco-core:ConfidenceFacet ;
+	uco-core:confidence "80"^^xsd:nonNegativeInteger .
+
+ex:confidence-agawam-collected
+	a uco-core:ConfidenceFacet ;
+	uco-core:confidence "80"^^xsd:nonNegativeInteger .
+
+ex:confidence-attleboro-collection
+	a uco-core:ConfidenceFacet ;
+	uco-core:confidence "80"^^xsd:nonNegativeInteger .
+
+ex:confidence-attleboro-disrupted
+	a uco-core:ConfidenceFacet ;
+	uco-core:confidence "80"^^xsd:nonNegativeInteger .
+
+#################################################################
+# Occupancy
+#################################################################
+
+ex:phase-agawam-collection
+	a traj:PhaseAssertion ;
+	uco-core:name "Agawam occupancy — proceeds collection" ;
+	traj:assertsState ex:state-proceeds-collection ;
+	traj:atInterval ex:interval-agawam-collection ;
+	traj:sequenceIndex "0"^^xsd:nonNegativeInteger ;
+	prov:wasDerivedFrom ex:evidence-agawam ;
+	uco-core:hasFacet ex:confidence-agawam-collection .
+
+ex:phase-agawam-collected
+	a traj:PhaseAssertion ;
+	uco-core:name "Agawam occupancy — collected" ;
+	traj:assertsState ex:state-collected ;
+	traj:atInterval ex:interval-agawam-collection ;
+	traj:sequenceIndex "1"^^xsd:nonNegativeInteger ;
+	traj:isTerminal "true"^^xsd:boolean ;
+	traj:terminalPolarity "completed" ;
+	prov:wasDerivedFrom ex:evidence-agawam ;
+	uco-core:hasFacet ex:confidence-agawam-collected .
+
+ex:trajectory-agawam
+	a traj:Trajectory ;
+	uco-core:name "Agawam rideshare collection" ;
+	traj:hasPhaseAssertion ex:phase-agawam-collection , ex:phase-agawam-collected .
+
+ex:phase-attleboro-collection
+	a traj:PhaseAssertion ;
+	uco-core:name "Attleboro occupancy — proceeds collection" ;
+	traj:assertsState ex:state-proceeds-collection ;
+	traj:atInterval ex:interval-attleboro-collection ;
+	traj:sequenceIndex "0"^^xsd:nonNegativeInteger ;
+	prov:wasDerivedFrom ex:evidence-attleboro ;
+	uco-core:hasFacet ex:confidence-attleboro-collection .
+
+ex:phase-attleboro-disrupted
+	a traj:PhaseAssertion ;
+	uco-core:name "Attleboro occupancy — disrupted" ;
+	traj:assertsState ex:state-disrupted ;
+	traj:atInterval ex:interval-attleboro-disrupted ;
+	traj:sequenceIndex "1"^^xsd:nonNegativeInteger ;
+	traj:isTerminal "true"^^xsd:boolean ;
+	traj:terminalPolarity "disrupted" ;
+	prov:wasDerivedFrom ex:evidence-attleboro ;
+	uco-core:hasFacet ex:confidence-attleboro-disrupted .
+
+ex:trajectory-attleboro
+	a traj:Trajectory ;
+	uco-core:name "Attleboro UPS collection" ;
+	traj:hasPhaseAssertion ex:phase-attleboro-collection , ex:phase-attleboro-disrupted .
+
+#################################################################
+# Walked edges
+#################################################################
+
+ex:instrument-rideshare
+	a uco-core:UcoObject ;
+	uco-core:name "Rideshare handoff" ;
+	uco-core:description "A rideshare driver is sent to the victim's address and carries the cash package. Neutral means of moving a package. Source: Aff." .
+
+ex:instrument-ups
+	a uco-core:UcoObject ;
+	uco-core:name "UPS shipment" ;
+	uco-core:description "A commercial carrier ships the cash package to an address. Neutral means of moving a package. Source: Aff." .
+
+ex:action-rideshare
+	a uco-action:Action ;
+	uco-core:name "Direct a rideshare driver to collect the cash package" ;
+	uco-action:performer ex:person-baez-santana ;
+	uco-action:instrument ex:instrument-rideshare ;
+	prov:wasDerivedFrom ex:evidence-agawam .
+
+ex:action-ups
+	a uco-action:Action ;
+	uco-core:name "Direct a UPS shipment of the cash package" ;
+	uco-action:performer ex:person-tavarez-jimenez ;
+	uco-action:instrument ex:instrument-ups ;
+	prov:wasDerivedFrom ex:evidence-attleboro .
+
+ex:transition-agawam
+	a traj:Transition ;
+	traj:fromState ex:state-proceeds-collection ;
+	traj:toState ex:state-collected ;
+	traj:trigger ex:action-rideshare ;
+	traj:enactsAction ex:action-rideshare .
+
+ex:transition-attleboro
+	a traj:Transition ;
+	traj:fromState ex:state-proceeds-collection ;
+	traj:toState ex:state-disrupted ;
+	traj:trigger ex:action-ups ;
+	traj:enactsAction ex:action-ups .
+
+#################################################################
+# Menu
+#################################################################
+
+ex:goal-collect-cash
+	a means:Goal ;
+	uco-core:name "Move the directed cash from the victim to the runners" ;
+	uco-core:description "Stable across the Agawam rideshare handoff and the Attleboro UPS shipment. Source: Aff." ;
+	means:pursuedBy ex:person-castanos-garcia .
+
+ex:option-rideshare
+	a means:Option ;
+	uco-core:name "Rideshare handoff" ;
+	uco-core:description "Walked in Agawam, February 2023. Source: Aff." ;
+	means:servesGoal ex:goal-collect-cash ;
+	means:availableAt ex:state-proceeds-collection ;
+	means:usesInstrument ex:instrument-rideshare ;
+	means:enactedTransition ex:transition-agawam ;
+	prov:wasDerivedFrom ex:evidence-agawam .
+
+ex:option-ups
+	a means:Option ;
+	uco-core:name "UPS shipment" ;
+	uco-core:description "Walked toward Attleboro and interrupted by arrest. Same goal as the rideshare option. Source: Aff." ;
+	means:servesGoal ex:goal-collect-cash ;
+	means:availableAt ex:state-proceeds-collection ;
+	means:usesInstrument ex:instrument-ups ;
+	means:enactedTransition ex:transition-attleboro ;
+	prov:wasDerivedFrom ex:evidence-attleboro .
+
+ex:capability-direct-rideshare
+	a means:OffenderCapability ;
+	uco-core:name "Can direct a rideshare driver" ;
+	uco-core:description "Baez Santana directed the Lyft driver. This is the actor's capability, not the platform feature. Source: Aff." ;
+	means:possessedBy ex:person-baez-santana ;
+	means:enablesOption ex:option-rideshare ;
+	prov:wasDerivedFrom ex:evidence-agawam .
+
+ex:capability-receive-shipment
+	a means:OffenderCapability ;
+	uco-core:name "Can receive a commercial shipment" ;
+	uco-core:description "Tavarez Jimenez collected a UPS package at an Attleboro address. Source: Aff." ;
+	means:possessedBy ex:person-tavarez-jimenez ;
+	means:enablesOption ex:option-ups ;
+	prov:wasDerivedFrom ex:evidence-attleboro .
+
+#################################################################
+# Inferred reading — levels are not in the affidavit
+#################################################################
+
+ex:activity-friction-reading
+	a prov:Activity ;
+	uco-core:name "Analyst reading of collection-method friction" ;
+	uco-core:description "Produces the friction levels. The affidavit names the methods. It does not grade friction, and it does not say these two realizations were compared as one menu." .
+
+ex:assessment-rideshare
+	a means:OptionAssessment ;
+	uco-core:name "Rideshare friction reading" ;
+	uco-core:description "Analyst reading: a doorstep handoff creates less carrier identity than a commercial shipment. Not a measurement and not a utility." ;
+	means:assessesOption ex:option-rideshare ;
+	means:identityFriction "low" ;
+	means:delayBurden "low" ;
+	means:detectionExposure "moderate" ;
+	means:resourceCost "low" ;
+	means:feasibility "feasible" ;
+	prov:wasGeneratedBy ex:activity-friction-reading .
+
+ex:assessment-ups
+	a means:OptionAssessment ;
+	uco-core:name "UPS friction reading" ;
+	uco-core:description "Analyst reading: a commercial shipment creates a carrier record and a delivery address. Not a measurement and not a utility." ;
+	means:assessesOption ex:option-ups ;
+	means:identityFriction "high" ;
+	means:delayBurden "moderate" ;
+	means:detectionExposure "moderate" ;
+	means:resourceCost "low" ;
+	means:feasibility "feasible" ;
+	prov:wasGeneratedBy ex:activity-friction-reading .
+
+#################################################################
+# One ESM, two independent realizations of the same goal
+#################################################################
+
+ex:layer-agawam
+	a lay:Layer ;
+	lay:occupiesTrajectory ex:trajectory-agawam ;
+	lay:layerIndex "1"^^xsd:nonNegativeInteger ;
+	lay:coverage "partial" .
+
+ex:layer-attleboro
+	a lay:Layer ;
+	lay:occupiesTrajectory ex:trajectory-attleboro ;
+	lay:layerIndex "2"^^xsd:nonNegativeInteger ;
+	lay:coverage "partial" .
+
+ex:esm
+	a lay:ExploitationStateMachine ;
+	uco-core:name "Castanos collection methods" ;
+	uco-core:description "Two partial trajectories for one cash-collection goal. Parallel here means independent realizations, not a claim that the incidents overlapped in time. completeness is partial: the elder-fraud alphabet beyond collection is not in this graph." ;
+	lay:compositionPattern "parallel" ;
+	lay:completeness "partial" ;
+	lay:concernsSubject ex:person-castanos-garcia ;
+	lay:hasLayer ex:layer-agawam , ex:layer-attleboro ;
+	lay:hasGoal ex:goal-collect-cash ;
+	lay:hasFactor ex:instrument-rideshare , ex:instrument-ups .

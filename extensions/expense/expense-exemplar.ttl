@@ -1,0 +1,438 @@
+# Benefit-at-expense exemplars. Synthetic facts, not a charging instrument.
+# Passes: a preexisting object, unpaid activity, and use of a minor
+# (a product made from that person, defect vulnerability).
+# Fails: a completed crime not at a person's expense, a wage kept,
+# benefit from absence, a blocked transfer, a minor who is not the
+# source, use with no alleged defect, and absence plus vulnerability.
+# No act is described. Offense names are not inputs.
+
+@prefix ex: <http://example.org/kb/expense-exemplar/> .
+@prefix expense: <http://example.org/ontology/expense/> .
+@prefix traj: <http://example.org/ontology/trajectories/> .
+@prefix uco-core: <https://ontology.unifiedcyberontology.org/uco/core/> .
+@prefix time: <http://www.w3.org/2006/time#> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+ex:run a prov:Activity ;
+	uco-core:name "Benefit-at-expense derivation" .
+
+ex:note a uco-core:UcoObject ;
+	uco-core:name "Synthetic instrument note" ;
+	uco-core:description "Fixture facts for the benefit-at-expense test. Not a court record." .
+
+ex:window a time:ProperInterval ;
+	uco-core:name "Fixture window" .
+
+ex:start a traj:State ; uco-core:name "Start" .
+ex:end a traj:State ; uco-core:name "End" .
+
+#################################################################
+# 1. Object taking. Passes exploitation and the narrower extraction test.
+#################################################################
+
+ex:t-object a traj:Transition ;
+	uco-core:name "Preexisting payment changes hands" ;
+	traj:fromState ex:start ; traj:toState ex:end ; traj:trigger ex:note .
+ex:facet-object a uco-core:ConfidenceFacet ; uco-core:confidence "55"^^xsd:nonNegativeInteger .
+ex:phase-object a traj:PhaseAssertion ;
+	traj:assertsState ex:end ; traj:atInterval ex:window ;
+	traj:sequenceIndex "1"^^xsd:nonNegativeInteger ;
+	traj:isTerminal true ; traj:terminalPolarity "completed" ;
+	prov:wasDerivedFrom ex:note ; uco-core:hasFacet ex:facet-object .
+ex:traj-object a traj:Trajectory ;
+	uco-core:name "Object taking" ;
+	traj:hasPhaseAssertion ex:phase-object .
+ex:anat-object a expense:BenefitAnatomy ;
+	uco-core:name "Person's preexisting payment" ;
+	uco-core:description "An identified person supplies a preexisting payment under a false basis and does not keep it. The payment remains if they leave." ;
+	expense:onTransition ex:t-object ;
+	expense:transferredObject "preexisting payment" ;
+	expense:suppliedByPerson true ;
+	expense:personRetainsValue false ;
+	expense:requiresPresence false ;
+	expense:preexisting true ;
+	expense:valueSurvivesVictim true ;
+	expense:advantageDefect "deception" ;
+	expense:anatomyRule "Object, preexisting, survives removal, person supplies it, person does not keep it, presence is not required. Derives victim_sourced." ;
+	expense:benefitSource "victim_sourced" ;
+	prov:wasGeneratedBy ex:run .
+ex:sep-object a expense:ExploitationAssessment ;
+	uco-core:name "Object taking passes" ;
+	uco-core:description "Goal edge derives victim_sourced and the defect is deception." ;
+	expense:assessesTrajectory ex:traj-object ;
+	expense:goalRealizingTransition ex:t-object ;
+	expense:hasBenefitAnatomy ex:anat-object ;
+	expense:extractionTestStatus "realized_at_expense" ;
+	expense:passesExtractionTest true ;
+	expense:passesExploitationTest true ;
+	expense:exploitationOnset ex:window ;
+	prov:wasGeneratedBy ex:run .
+
+#################################################################
+# 2. Activity. Passes exploitation. Fails the object test.
+# No offense name is an input. The facts are: the person produces it,
+# they must be present, they do not keep it, and the instrument alleges coercion.
+#################################################################
+
+ex:t-activity a traj:Transition ;
+	uco-core:name "Unpaid activity" ;
+	traj:fromState ex:start ; traj:toState ex:end ; traj:trigger ex:note .
+ex:facet-activity a uco-core:ConfidenceFacet ; uco-core:confidence "55"^^xsd:nonNegativeInteger .
+ex:phase-activity a traj:PhaseAssertion ;
+	traj:assertsState ex:end ; traj:atInterval ex:window ;
+	traj:sequenceIndex "1"^^xsd:nonNegativeInteger ;
+	traj:isTerminal true ; traj:terminalPolarity "completed" ;
+	prov:wasDerivedFrom ex:note ; uco-core:hasFacet ex:facet-activity .
+ex:traj-activity a traj:Trajectory ;
+	uco-core:name "Activity at the person's expense" ;
+	traj:hasPhaseAssertion ex:phase-activity .
+ex:anat-activity a expense:BenefitAnatomy ;
+	uco-core:name "Activity the person does not keep" ;
+	uco-core:description "Nothing changes hands as a chattel. The gain requires the person to be present and producing. They do not keep the value. The instrument alleges coercion." ;
+	expense:onTransition ex:t-activity ;
+	expense:suppliedByPerson true ;
+	expense:personRetainsValue false ;
+	expense:requiresPresence true ;
+	expense:preexisting false ;
+	expense:valueSurvivesVictim false ;
+	expense:advantageDefect "coercion" ;
+	expense:anatomyRule "No object, value does not survive removal, presence is required, person supplies it and does not keep it. Derives person_activity." ;
+	expense:benefitSource "person_activity" ;
+	prov:wasGeneratedBy ex:run .
+ex:sep-activity a expense:ExploitationAssessment ;
+	uco-core:name "Activity passes exploitation and fails extraction" ;
+	uco-core:description "Same predicate as the object taking. The object half fails because nothing preexisting changes hands." ;
+	expense:assessesTrajectory ex:traj-activity ;
+	expense:goalRealizingTransition ex:t-activity ;
+	expense:hasBenefitAnatomy ex:anat-activity ;
+	expense:extractionTestStatus "realized_at_expense" ;
+	expense:passesExtractionTest false ;
+	expense:passesExploitationTest true ;
+	expense:exploitationOnset ex:window ;
+	prov:wasGeneratedBy ex:run .
+
+#################################################################
+# 3. Completed crime, deception, gain not from a person. Fails.
+#################################################################
+
+ex:t-system a traj:Transition ;
+	uco-core:name "Concealed use of a system" ;
+	traj:fromState ex:start ; traj:toState ex:end ; traj:trigger ex:note .
+ex:facet-system a uco-core:ConfidenceFacet ; uco-core:confidence "55"^^xsd:nonNegativeInteger .
+ex:phase-system a traj:PhaseAssertion ;
+	traj:assertsState ex:end ; traj:atInterval ex:window ;
+	traj:sequenceIndex "1"^^xsd:nonNegativeInteger ;
+	traj:isTerminal true ; traj:terminalPolarity "completed" ;
+	prov:wasDerivedFrom ex:note ; uco-core:hasFacet ex:facet-system .
+ex:traj-system a traj:Trajectory ;
+	uco-core:name "System deception, no person's expense" ;
+	traj:hasPhaseAssertion ex:phase-system .
+ex:anat-system a expense:BenefitAnatomy ;
+	uco-core:name "Deception whose gain is not a person's" ;
+	uco-core:description "False statements conceal a payment's origin. The gain is use of the system. No identified person supplies property or activity." ;
+	expense:onTransition ex:t-system ;
+	expense:suppliedByPerson false ;
+	expense:personRetainsValue false ;
+	expense:requiresPresence false ;
+	expense:preexisting false ;
+	expense:valueSurvivesVictim true ;
+	expense:advantageDefect "deception" ;
+	expense:anatomyRule "The gain is not supplied by an identified person. Deception does not change that. Derives not_from_person." ;
+	expense:benefitSource "not_from_person" ;
+	prov:wasGeneratedBy ex:run .
+ex:sep-system a expense:ExploitationAssessment ;
+	uco-core:name "System deception fails" ;
+	uco-core:description "The crime can be completed. It is not a benefit at an identified person's expense." ;
+	expense:assessesTrajectory ex:traj-system ;
+	expense:goalRealizingTransition ex:t-system ;
+	expense:hasBenefitAnatomy ex:anat-system ;
+	expense:extractionTestStatus "not_exploitation" ;
+	expense:passesExtractionTest false ;
+	expense:passesExploitationTest false ;
+	prov:wasGeneratedBy ex:run .
+
+#################################################################
+# 4. Person supplies activity and keeps the wage. Fails.
+#################################################################
+
+ex:t-wage a traj:Transition ;
+	uco-core:name "Paid activity" ;
+	traj:fromState ex:start ; traj:toState ex:end ; traj:trigger ex:note .
+ex:facet-wage a uco-core:ConfidenceFacet ; uco-core:confidence "55"^^xsd:nonNegativeInteger .
+ex:phase-wage a traj:PhaseAssertion ;
+	traj:assertsState ex:end ; traj:atInterval ex:window ;
+	traj:sequenceIndex "1"^^xsd:nonNegativeInteger ;
+	traj:isTerminal true ; traj:terminalPolarity "completed" ;
+	prov:wasDerivedFrom ex:note ; uco-core:hasFacet ex:facet-wage .
+ex:traj-wage a traj:Trajectory ;
+	uco-core:name "Activity the person keeps" ;
+	traj:hasPhaseAssertion ex:phase-wage .
+ex:anat-wage a expense:BenefitAnatomy ;
+	uco-core:name "Wage retained" ;
+	uco-core:description "The person does the work and keeps the wage the instrument describes." ;
+	expense:onTransition ex:t-wage ;
+	expense:suppliedByPerson true ;
+	expense:personRetainsValue true ;
+	expense:requiresPresence true ;
+	expense:preexisting false ;
+	expense:valueSurvivesVictim false ;
+	expense:advantageDefect "none_alleged" ;
+	expense:anatomyRule "The person supplies the activity and keeps its value. Derives retained." ;
+	expense:benefitSource "retained" ;
+	prov:wasGeneratedBy ex:run .
+ex:sep-wage a expense:ExploitationAssessment ;
+	uco-core:name "Retained wage fails" ;
+	uco-core:description "Activity alone is not expense when the person keeps the value." ;
+	expense:assessesTrajectory ex:traj-wage ;
+	expense:goalRealizingTransition ex:t-wage ;
+	expense:hasBenefitAnatomy ex:anat-wage ;
+	expense:extractionTestStatus "not_exploitation" ;
+	expense:passesExtractionTest false ;
+	expense:passesExploitationTest false ;
+	prov:wasGeneratedBy ex:run .
+
+#################################################################
+# 5. Benefit is the person's absence. Fails.
+#################################################################
+
+ex:t-absence a traj:Transition ;
+	uco-core:name "Benefit is absence" ;
+	traj:fromState ex:start ; traj:toState ex:end ; traj:trigger ex:note .
+ex:facet-absence a uco-core:ConfidenceFacet ; uco-core:confidence "55"^^xsd:nonNegativeInteger .
+ex:phase-absence a traj:PhaseAssertion ;
+	traj:assertsState ex:end ; traj:atInterval ex:window ;
+	traj:sequenceIndex "1"^^xsd:nonNegativeInteger ;
+	traj:isTerminal true ; traj:terminalPolarity "completed" ;
+	prov:wasDerivedFrom ex:note ; uco-core:hasFacet ex:facet-absence .
+ex:traj-absence a traj:Trajectory ;
+	uco-core:name "Absence benefit" ;
+	traj:hasPhaseAssertion ex:phase-absence .
+ex:anat-absence a expense:BenefitAnatomy ;
+	uco-core:name "Their absence is the benefit" ;
+	uco-core:description "No object passes. The value does not survive because the benefit is that the person is gone. Their presence is not required." ;
+	expense:onTransition ex:t-absence ;
+	expense:suppliedByPerson true ;
+	expense:personRetainsValue false ;
+	expense:requiresPresence false ;
+	expense:preexisting false ;
+	expense:valueSurvivesVictim false ;
+	expense:advantageDefect "coercion" ;
+	expense:anatomyRule "No object, value does not survive, presence is not required. Derives victim_targeted. Coercion does not make absence into expense of the exploitation form." ;
+	expense:benefitSource "victim_targeted" ;
+	prov:wasGeneratedBy ex:run .
+ex:sep-absence a expense:ExploitationAssessment ;
+	uco-core:name "Absence fails" ;
+	uco-core:description "Harm constituted by absence is not a benefit supplied by the person and kept from them." ;
+	expense:assessesTrajectory ex:traj-absence ;
+	expense:goalRealizingTransition ex:t-absence ;
+	expense:hasBenefitAnatomy ex:anat-absence ;
+	expense:extractionTestStatus "not_exploitation" ;
+	expense:passesExtractionTest false ;
+	expense:passesExploitationTest false ;
+	prov:wasGeneratedBy ex:run .
+
+#################################################################
+# 6. Transfer blocked. No goal edge. Fails.
+#################################################################
+
+ex:t-blocked a traj:Transition ;
+	uco-core:name "Blocked transfer" ;
+	traj:fromState ex:start ; traj:toState ex:end ; traj:trigger ex:note .
+ex:facet-blocked a uco-core:ConfidenceFacet ; uco-core:confidence "55"^^xsd:nonNegativeInteger .
+ex:phase-blocked a traj:PhaseAssertion ;
+	traj:assertsState ex:end ; traj:atInterval ex:window ;
+	traj:sequenceIndex "1"^^xsd:nonNegativeInteger ;
+	traj:isTerminal true ; traj:terminalPolarity "disrupted" ;
+	prov:wasDerivedFrom ex:note ; uco-core:hasFacet ex:facet-blocked .
+ex:traj-blocked a traj:Trajectory ;
+	uco-core:name "Blocked transfer" ;
+	traj:hasPhaseAssertion ex:phase-blocked .
+ex:anat-blocked a expense:BenefitAnatomy ;
+	uco-core:name "Nothing passed" ;
+	uco-core:description "The institution stopped the transfer. No object changed hands." ;
+	expense:onTransition ex:t-blocked ;
+	expense:suppliedByPerson true ;
+	expense:personRetainsValue false ;
+	expense:requiresPresence false ;
+	expense:preexisting true ;
+	expense:valueSurvivesVictim true ;
+	expense:advantageDefect "deception" ;
+	expense:anatomyRule "No object passed. Presence is not required and the value would have survived, so this edge is none. The trajectory test is not_realized because there is no goal edge." ;
+	expense:benefitSource "none" ;
+	prov:wasGeneratedBy ex:run .
+ex:sep-blocked a expense:ExploitationAssessment ;
+	uco-core:name "Blocked transfer fails" ;
+	uco-core:description "Disrupted terminal. No goal-realizing transition." ;
+	expense:assessesTrajectory ex:traj-blocked ;
+	expense:hasBenefitAnatomy ex:anat-blocked ;
+	expense:extractionTestStatus "not_realized" ;
+	expense:passesExtractionTest false ;
+	expense:passesExploitationTest false ;
+	prov:wasGeneratedBy ex:run .
+
+#################################################################
+# 7. Use of a minor. Product made from that person. Passes
+# exploitation. Fails the preexisting-object test.
+# No act is described.
+#################################################################
+
+ex:t-minor a traj:Transition ;
+	uco-core:name "Product made from a minor" ;
+	traj:fromState ex:start ; traj:toState ex:end ; traj:trigger ex:note .
+ex:facet-minor a uco-core:ConfidenceFacet ; uco-core:confidence "55"^^xsd:nonNegativeInteger .
+ex:phase-minor a traj:PhaseAssertion ;
+	traj:assertsState ex:end ; traj:atInterval ex:window ;
+	traj:sequenceIndex "1"^^xsd:nonNegativeInteger ;
+	traj:isTerminal true ; traj:terminalPolarity "completed" ;
+	prov:wasDerivedFrom ex:note ; uco-core:hasFacet ex:facet-minor .
+ex:traj-minor a traj:Trajectory ;
+	uco-core:name "Use of a minor" ;
+	traj:hasPhaseAssertion ex:phase-minor .
+ex:anat-minor a expense:BenefitAnatomy ;
+	uco-core:name "Recording produced from a minor" ;
+	uco-core:description "Synthetic. The fixture identifies the person as a minor, so the defect is vulnerability. The benefit is a recording produced from that person. It did not exist before the use and keeps its value afterward. No act is described. Not a court record." ;
+	expense:onTransition ex:t-minor ;
+	expense:transferredObject "recording produced from that person" ;
+	expense:suppliedByPerson true ;
+	expense:personRetainsValue false ;
+	expense:requiresPresence false ;
+	expense:preexisting false ;
+	expense:valueSurvivesVictim true ;
+	expense:advantageDefect "vulnerability" ;
+	expense:anatomyRule "Object exists, it is not preexisting, the person supplies it and does not keep it. Earlier branches do not apply. Derives person_used." ;
+	expense:benefitSource "person_used" ;
+	prov:wasGeneratedBy ex:run .
+ex:sep-minor a expense:ExploitationAssessment ;
+	uco-core:name "Use of a minor passes" ;
+	uco-core:description "Goal edge derives person_used and the defect is vulnerability. Onset is the fixture window of the arriving phase. Extraction fails because the object was not preexisting." ;
+	expense:assessesTrajectory ex:traj-minor ;
+	expense:goalRealizingTransition ex:t-minor ;
+	expense:hasBenefitAnatomy ex:anat-minor ;
+	expense:extractionTestStatus "realized_at_expense" ;
+	expense:passesExtractionTest false ;
+	expense:passesExploitationTest true ;
+	expense:exploitationOnset ex:window ;
+	prov:wasGeneratedBy ex:run .
+
+#################################################################
+# 8. A minor who is not the source. Vulnerability does not pass.
+#################################################################
+
+ex:t-program a traj:Transition ;
+	uco-core:name "Program payment, minor identified" ;
+	traj:fromState ex:start ; traj:toState ex:end ; traj:trigger ex:note .
+ex:facet-program a uco-core:ConfidenceFacet ; uco-core:confidence "55"^^xsd:nonNegativeInteger .
+ex:phase-program a traj:PhaseAssertion ;
+	traj:assertsState ex:end ; traj:atInterval ex:window ;
+	traj:sequenceIndex "1"^^xsd:nonNegativeInteger ;
+	traj:isTerminal true ; traj:terminalPolarity "completed" ;
+	prov:wasDerivedFrom ex:note ; uco-core:hasFacet ex:facet-program .
+ex:traj-program a traj:Trajectory ;
+	uco-core:name "Minor is not the source" ;
+	traj:hasPhaseAssertion ex:phase-program .
+ex:anat-program a expense:BenefitAnatomy ;
+	uco-core:name "Program funds" ;
+	uco-core:description "Synthetic. The fixture identifies a minor. The gain is a program payment that minor did not supply. Vulnerability is alleged and is not sufficient." ;
+	expense:onTransition ex:t-program ;
+	expense:transferredObject "program payment" ;
+	expense:suppliedByPerson false ;
+	expense:personRetainsValue false ;
+	expense:requiresPresence false ;
+	expense:preexisting true ;
+	expense:valueSurvivesVictim true ;
+	expense:advantageDefect "vulnerability" ;
+	expense:anatomyRule "The person did not supply the gain. Derives not_from_person." ;
+	expense:benefitSource "not_from_person" ;
+	prov:wasGeneratedBy ex:run .
+ex:sep-program a expense:ExploitationAssessment ;
+	uco-core:name "Vulnerability without a person's gain fails" ;
+	uco-core:description "Goal edge is not at an identified person's expense. No onset." ;
+	expense:assessesTrajectory ex:traj-program ;
+	expense:goalRealizingTransition ex:t-program ;
+	expense:hasBenefitAnatomy ex:anat-program ;
+	expense:extractionTestStatus "not_exploitation" ;
+	expense:passesExtractionTest false ;
+	expense:passesExploitationTest false ;
+	prov:wasGeneratedBy ex:run .
+
+#################################################################
+# 9. Use of a person, no deception, coercion, or vulnerability.
+#################################################################
+
+ex:t-agreed a traj:Transition ;
+	uco-core:name "Product from a person, no defect alleged" ;
+	traj:fromState ex:start ; traj:toState ex:end ; traj:trigger ex:note .
+ex:facet-agreed a uco-core:ConfidenceFacet ; uco-core:confidence "55"^^xsd:nonNegativeInteger .
+ex:phase-agreed a traj:PhaseAssertion ;
+	traj:assertsState ex:end ; traj:atInterval ex:window ;
+	traj:sequenceIndex "1"^^xsd:nonNegativeInteger ;
+	traj:isTerminal true ; traj:terminalPolarity "completed" ;
+	prov:wasDerivedFrom ex:note ; uco-core:hasFacet ex:facet-agreed .
+ex:traj-agreed a traj:Trajectory ;
+	uco-core:name "Use with no alleged defect" ;
+	traj:hasPhaseAssertion ex:phase-agreed .
+ex:anat-agreed a expense:BenefitAnatomy ;
+	uco-core:name "Recording, no defect alleged" ;
+	uco-core:description "Synthetic. An identified adult is the source of a recording that did not exist before. The fixture alleges no deception, coercion, or vulnerability." ;
+	expense:onTransition ex:t-agreed ;
+	expense:transferredObject "recording produced from that person" ;
+	expense:suppliedByPerson true ;
+	expense:personRetainsValue false ;
+	expense:requiresPresence false ;
+	expense:preexisting false ;
+	expense:valueSurvivesVictim true ;
+	expense:advantageDefect "none_alleged" ;
+	expense:anatomyRule "Same person_used facts as the minor case. The defect is none_alleged, so the trajectory fails." ;
+	expense:benefitSource "person_used" ;
+	prov:wasGeneratedBy ex:run .
+ex:sep-agreed a expense:ExploitationAssessment ;
+	uco-core:name "Use without an alleged defect fails" ;
+	uco-core:description "person_used is not enough. No onset." ;
+	expense:assessesTrajectory ex:traj-agreed ;
+	expense:goalRealizingTransition ex:t-agreed ;
+	expense:hasBenefitAnatomy ex:anat-agreed ;
+	expense:extractionTestStatus "not_exploitation" ;
+	expense:passesExtractionTest false ;
+	expense:passesExploitationTest false ;
+	prov:wasGeneratedBy ex:run .
+
+#################################################################
+# 10. Benefit is absence. Vulnerability does not convert it.
+#################################################################
+
+ex:t-absence-minor a traj:Transition ;
+	uco-core:name "Benefit is a minor's absence" ;
+	traj:fromState ex:start ; traj:toState ex:end ; traj:trigger ex:note .
+ex:facet-absence-minor a uco-core:ConfidenceFacet ; uco-core:confidence "55"^^xsd:nonNegativeInteger .
+ex:phase-absence-minor a traj:PhaseAssertion ;
+	traj:assertsState ex:end ; traj:atInterval ex:window ;
+	traj:sequenceIndex "1"^^xsd:nonNegativeInteger ;
+	traj:isTerminal true ; traj:terminalPolarity "completed" ;
+	prov:wasDerivedFrom ex:note ; uco-core:hasFacet ex:facet-absence-minor .
+ex:traj-absence-minor a traj:Trajectory ;
+	uco-core:name "Absence of a minor" ;
+	traj:hasPhaseAssertion ex:phase-absence-minor .
+ex:anat-absence-minor a expense:BenefitAnatomy ;
+	uco-core:name "Absence, vulnerability alleged" ;
+	uco-core:description "Synthetic. The fixture identifies a minor. The benefit is that person's absence. Nothing of theirs was taken and they were not used." ;
+	expense:onTransition ex:t-absence-minor ;
+	expense:suppliedByPerson true ;
+	expense:personRetainsValue false ;
+	expense:requiresPresence false ;
+	expense:preexisting false ;
+	expense:valueSurvivesVictim false ;
+	expense:advantageDefect "vulnerability" ;
+	expense:anatomyRule "The value does not survive and presence is not required. Derives victim_targeted." ;
+	expense:benefitSource "victim_targeted" ;
+	prov:wasGeneratedBy ex:run .
+ex:sep-absence-minor a expense:ExploitationAssessment ;
+	uco-core:name "Absence of a minor fails" ;
+	uco-core:description "victim_targeted fails even when the defect is vulnerability. No onset." ;
+	expense:assessesTrajectory ex:traj-absence-minor ;
+	expense:goalRealizingTransition ex:t-absence-minor ;
+	expense:hasBenefitAnatomy ex:anat-absence-minor ;
+	expense:extractionTestStatus "not_exploitation" ;
+	expense:passesExtractionTest false ;
+	expense:passesExploitationTest false ;
+	prov:wasGeneratedBy ex:run .

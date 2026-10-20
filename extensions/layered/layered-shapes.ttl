@@ -1,0 +1,274 @@
+# Layered extension — SHACL
+#
+# (1) Composition metamodel shapes for ExploitationStateMachine / Layer / Coupling
+# (2) Technique-action instrument requirement for layered-vocab Technique classes
+
+@prefix lay: <http://example.org/ontology/layered/> .
+@prefix traj: <http://example.org/ontology/trajectories/> .
+@prefix uco-core: <https://ontology.unifiedcyberontology.org/uco/core/> .
+@prefix uco-action: <https://ontology.unifiedcyberontology.org/uco/action/> .
+@prefix time: <http://www.w3.org/2006/time#> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+#################################################################
+# ExploitationStateMachine
+#################################################################
+
+lay:ExploitationStateMachine-shape
+	a sh:NodeShape ;
+	sh:targetClass lay:ExploitationStateMachine ;
+	sh:message "lay:ExploitationStateMachine is the case-level layered ESM composition root."@en ;
+	sh:property
+		[
+			sh:path lay:hasLayer ;
+			sh:class lay:Layer ;
+			sh:minCount 1 ;
+			sh:nodeKind sh:IRI ;
+			sh:message "An ESM MUST compose >=1 lay:Layer."@en ;
+		] ;
+	sh:property
+		[
+			sh:path lay:hasCoupling ;
+			sh:class lay:Coupling ;
+			sh:nodeKind sh:IRI ;
+		] ;
+	sh:property
+		[
+			sh:path lay:hasFactor ;
+			sh:nodeKind sh:IRI ;
+		] ;
+	sh:property
+		[
+			sh:path lay:hasGoal ;
+			sh:class uco-core:UcoObject ;
+			sh:nodeKind sh:IRI ;
+			sh:message "lay:hasGoal, when present, points at a UcoObject. A means:Goal satisfies this when means is loaded. The property is optional."@en ;
+		] ;
+	sh:property
+		[
+			sh:path lay:hasExpenseAssessment ;
+			sh:class uco-core:UcoObject ;
+			sh:nodeKind sh:IRI ;
+			sh:message "lay:hasExpenseAssessment, when present, points at a UcoObject. An expense:ExploitationAssessment satisfies this when expense is loaded. Omit the property on a machine that does not run the test."@en ;
+		] ;
+	sh:property
+		[
+			sh:path lay:hasAggregateModel ;
+			sh:class traj:StateMachineModel ;
+			sh:maxCount 1 ;
+			sh:nodeKind sh:IRI ;
+		] ;
+	sh:property
+		[
+			sh:path lay:concernsSubject ;
+			sh:maxCount 1 ;
+			sh:nodeKind sh:IRI ;
+		] ;
+	sh:property
+		[
+			sh:path lay:compositionPattern ;
+			sh:datatype xsd:string ;
+			sh:in ( "sequential" "concurrent" "parallel" "hybrid" ) ;
+			sh:minCount 1 ;
+			sh:maxCount 1 ;
+			sh:nodeKind sh:Literal ;
+			sh:message "lay:compositionPattern MUST be one of: sequential, concurrent, parallel, hybrid."@en ;
+		] ;
+	sh:property
+		[
+			sh:path lay:completeness ;
+			sh:datatype xsd:string ;
+			sh:in ( "full" "partial" ) ;
+			sh:minCount 1 ;
+			sh:maxCount 1 ;
+			sh:nodeKind sh:Literal ;
+			sh:message "lay:completeness MUST be 'full' or 'partial'."@en ;
+		] ;
+	sh:not
+		[
+			sh:or (
+				[ sh:class lay:Layer ]
+				[ sh:class lay:Coupling ]
+			) ;
+			sh:message "ExploitationStateMachine must not also be typed Layer or Coupling."@en ;
+		] .
+
+#################################################################
+# Layer
+#################################################################
+
+lay:Layer-shape
+	a sh:NodeShape ;
+	sh:targetClass lay:Layer ;
+	sh:message "lay:Layer binds exactly one traj:Trajectory inside an ESM."@en ;
+	sh:property
+		[
+			sh:path lay:occupiesTrajectory ;
+			sh:class traj:Trajectory ;
+			sh:minCount 1 ;
+			sh:maxCount 1 ;
+			sh:nodeKind sh:IRI ;
+			sh:message "Every Layer MUST occupy exactly one traj:Trajectory."@en ;
+		] ;
+	sh:property
+		[
+			sh:path lay:hasMachineModel ;
+			sh:class traj:StateMachineModel ;
+			sh:maxCount 1 ;
+			sh:nodeKind sh:IRI ;
+		] ;
+	sh:property
+		[
+			sh:path lay:domainAlphabet ;
+			sh:class skos:ConceptScheme ;
+			sh:maxCount 1 ;
+			sh:nodeKind sh:IRI ;
+		] ;
+	sh:property
+		[
+			sh:path lay:layerIndex ;
+			sh:datatype xsd:nonNegativeInteger ;
+			sh:minCount 1 ;
+			sh:maxCount 1 ;
+			sh:nodeKind sh:Literal ;
+			sh:message "Every Layer MUST carry lay:layerIndex."@en ;
+		] ;
+	sh:property
+		[
+			sh:path lay:coverage ;
+			sh:datatype xsd:string ;
+			sh:in ( "full" "partial" ) ;
+			sh:minCount 1 ;
+			sh:maxCount 1 ;
+			sh:nodeKind sh:Literal ;
+			sh:message "lay:coverage MUST be 'full' or 'partial'."@en ;
+		] ;
+	sh:property
+		[
+			sh:path lay:concurrencyGroup ;
+			sh:datatype xsd:string ;
+			sh:maxCount 1 ;
+			sh:nodeKind sh:Literal ;
+		] ;
+	sh:not
+		[
+			sh:or (
+				[ sh:class lay:ExploitationStateMachine ]
+				[ sh:class lay:Coupling ]
+			) ;
+			sh:message "Layer must not also be typed ExploitationStateMachine or Coupling."@en ;
+		] .
+
+#################################################################
+# Coupling
+#################################################################
+
+lay:Coupling-shape
+	a sh:NodeShape ;
+	sh:targetClass lay:Coupling ;
+	sh:message "lay:Coupling is a first-class inter-layer (or endpoint) ESM edge."@en ;
+	sh:property
+		[
+			sh:path lay:couplingKind ;
+			sh:datatype xsd:string ;
+			sh:in ( "enables" "providesLeverageFor" "produces" "sharesFactor" "temporallyOverlaps" "feeds" ) ;
+			sh:minCount 1 ;
+			sh:maxCount 1 ;
+			sh:nodeKind sh:Literal ;
+			sh:message "lay:couplingKind MUST be one of: enables, providesLeverageFor, produces, sharesFactor, temporallyOverlaps, feeds."@en ;
+		] ;
+	sh:property
+		[
+			sh:path lay:fromLayer ;
+			sh:class lay:Layer ;
+			sh:maxCount 1 ;
+			sh:nodeKind sh:IRI ;
+		] ;
+	sh:property
+		[
+			sh:path lay:toLayer ;
+			sh:class lay:Layer ;
+			sh:maxCount 1 ;
+			sh:nodeKind sh:IRI ;
+		] ;
+	sh:property
+		[
+			sh:path lay:fromEndpoint ;
+			sh:maxCount 1 ;
+			sh:nodeKind sh:IRI ;
+		] ;
+	sh:property
+		[
+			sh:path lay:toEndpoint ;
+			sh:maxCount 1 ;
+			sh:nodeKind sh:IRI ;
+		] ;
+	sh:property
+		[
+			sh:path lay:realizedBy ;
+			sh:class uco-core:Relationship ;
+			sh:maxCount 1 ;
+			sh:nodeKind sh:IRI ;
+		] ;
+	sh:property
+		[
+			sh:path lay:couplingInterval ;
+			sh:maxCount 1 ;
+			sh:nodeKind sh:IRI ;
+		] ;
+	# At least one of fromLayer or fromEndpoint; at least one of toLayer or toEndpoint
+	sh:or (
+		[ sh:path lay:fromLayer ; sh:minCount 1 ]
+		[ sh:path lay:fromEndpoint ; sh:minCount 1 ]
+	) ;
+	sh:or (
+		[ sh:path lay:toLayer ; sh:minCount 1 ]
+		[ sh:path lay:toEndpoint ; sh:minCount 1 ]
+	) ;
+	# temporallyOverlaps SHOULD carry a couplingInterval (soft via dedicated shape)
+	sh:not
+		[
+			sh:or (
+				[ sh:class lay:ExploitationStateMachine ]
+				[ sh:class lay:Layer ]
+			) ;
+			sh:message "Coupling must not also be typed ExploitationStateMachine or Layer."@en ;
+		] .
+
+lay:Coupling-temporallyOverlaps-shape
+	a sh:NodeShape ;
+	sh:targetClass lay:Coupling ;
+	sh:message "temporallyOverlaps Couplings must carry lay:couplingInterval."@en ;
+	sh:not
+		[
+			sh:and (
+				[ sh:path lay:couplingKind ; sh:hasValue "temporallyOverlaps" ]
+				[ sh:not [ sh:path lay:couplingInterval ; sh:minCount 1 ] ]
+			) ;
+			sh:message "A Coupling with couplingKind temporallyOverlaps MUST carry lay:couplingInterval."@en ;
+		] .
+
+#################################################################
+# Domain Technique actions (layered-vocab) — instrument required
+#################################################################
+
+lay:TechniqueAction-shape
+	a sh:NodeShape ;
+	sh:targetClass
+		lay:a_material_induce ,
+		lay:a_force_sexual_activity ,
+		lay:a_produce_csam ,
+		lay:a_bring_to_us ,
+		lay:a_harbor_aliens ,
+		lay:a_force_child_sex_acts ,
+		lay:a_threaten_ice_and_exposure ,
+		lay:a_digital_surveillance_control ;
+	sh:property
+		[
+			sh:path uco-action:instrument ;
+			sh:minCount 1 ;
+			sh:nodeKind sh:IRI ;
+			sh:message "A layered Technique action instance must carry >=1 uco-action:instrument naming the abused affordance."@en ;
+		] .

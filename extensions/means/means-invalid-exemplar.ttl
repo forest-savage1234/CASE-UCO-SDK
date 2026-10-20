@@ -1,0 +1,31 @@
+# Expected-INVALID choice fixture.
+# Must FAIL: option missing goal, state, instrument, and evidence;
+# assessment uses a friction token outside the vocabulary and has no
+# prov:wasGeneratedBy; selection uses a reward-style rule and names
+# only one option.
+
+@prefix means: <http://example.org/ontology/means/> .
+@prefix ex: <http://example.org/kb/means/invalid/> .
+@prefix uco-core: <https://ontology.unifiedcyberontology.org/uco/core/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+ex:bad-option
+	a means:Option ;
+	uco-core:name "Option with no goal, state, instrument, or source" .
+
+ex:bad-assessment
+	a means:OptionAssessment ;
+	uco-core:name "Assessment with an illegal friction token and no provenance" ;
+	means:assessesOption ex:bad-option ;
+	means:identityFriction "easy" ;
+	means:delayBurden "low" ;
+	means:detectionExposure "low" ;
+	means:resourceCost "low" ;
+	means:feasibility "feasible" .
+
+ex:bad-selection
+	a means:Selection ;
+	uco-core:name "Selection that claims a reward rule and has no menu" ;
+	means:selectsOption ex:bad-option ;
+	means:amongOptions ex:bad-option ;
+	means:selectionRule "bellman" .

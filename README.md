@@ -8,7 +8,7 @@
 [![Upstream Freshness](https://github.com/vulnmaster/CASE-UCO-SDK/actions/workflows/upstream-freshness.yml/badge.svg?branch=main)](https://github.com/vulnmaster/CASE-UCO-SDK/actions/workflows/upstream-freshness.yml)
 [![Release](https://img.shields.io/github/v/release/vulnmaster/CASE-UCO-SDK)](https://github.com/vulnmaster/CASE-UCO-SDK/releases/latest)
 
-**v1.32.0** · CASE 1.5.0 · UCO 1.5.0 · CAC 3.1.0 · [Changelog](CHANGELOG.md#1320---2026-10-19)
+**v1.32.1** · CASE 1.5.0 · UCO 1.5.0 · CAC 3.1.0 · [Changelog](CHANGELOG.md#1321---2026-10-19)
 
 A multi-language data modeling library for digital forensics, cyber-investigation, and cyber-observable data. If your software produces or consumes forensic evidence, this SDK gives you typed, validated builders in **Python**, **C#**, **Java**, and **Rust** — so you can model investigation data in your language and produce interoperable [CASE/UCO](https://caseontology.org/) JSON-LD output.
 
@@ -41,7 +41,7 @@ Beyond the generated code, the repository provides:
 
 Install the SDK package for your language. No need to clone the repo or run the generator.
 
-[**v1.31.0**](https://github.com/vulnmaster/CASE-UCO-SDK/releases/tag/v1.31.0) completes MITRE ATT&CK v19.2 adoption (Enterprise, Mobile and ICS) and adopts MITRE ATLAS, both as classes under the UCO `uco-action:Technique` metaclass. It also re-syncs SOLVE-IT 0.2.11, adds QUDT 3.5.2 and SOSA/SSN profiles, and rebuilds change-proposal drafting around competency questions with marked provenance. Validation stays pinned to [case-utils 0.18.0](https://pypi.org/project/case-utils/) (`--built-version case-1.5.0`) for CASE/UCO 1.5.0 and CAC 3.1.0. You can also build from source via the CLI or MCP (see [Getting Started](#getting-started) below).
+[**v1.32.1**](https://github.com/vulnmaster/CASE-UCO-SDK/releases/tag/v1.32.1) ships the candidate `layered`, `means`, and `expense` extensions for composing exploitation state machines. It builds on v1.32.0, which stopped document mapping from asserting implausible phone numbers and institutional phrases as people, returns ranked recipes when routing abstains, and does not accept an empty critic review. Validation stays pinned to [case-utils 0.18.0](https://pypi.org/project/case-utils/) (`--built-version case-1.5.0`) for CASE/UCO 1.5.0 and CAC 3.1.0. You can also build from source via the CLI or MCP (see [Getting Started](#getting-started) below).
 
 
 When registry packages are published in a later release:
@@ -58,7 +58,7 @@ For Java (once on Maven Central), add to your `pom.xml`:
 <dependency>
     <groupId>org.caseontology</groupId>
     <artifactId>case-uco</artifactId>
-    <version>1.32.0</version>
+    <version>1.32.1</version>
 </dependency>
 ```
 
@@ -582,6 +582,7 @@ All four language packages are released in lockstep from the same ontology sourc
 
 | SDK Version | UCO | CASE | Python `case-uco` | C# `CaseUco` | Java `case-uco` | Rust `case-uco` |
 |-------------|-----|------|-------------------|--------------|-----------------|-----------------|
+| 1.32.1 | 1.5.0 | 1.5.0 | 1.32.1 | 1.32.1 | 1.32.1 | 1.32.1 |
 | 1.32.0 | 1.5.0 | 1.5.0 | 1.32.0 | 1.32.0 | 1.32.0 | 1.32.0 |
 | 1.31.2 | 1.5.0 | 1.5.0 | 1.31.2 | 1.31.2 | 1.31.2 | 1.31.2 |
 | 1.31.1 | 1.5.0 | 1.5.0 | 1.31.1 | 1.31.1 | 1.31.1 | 1.31.1 |

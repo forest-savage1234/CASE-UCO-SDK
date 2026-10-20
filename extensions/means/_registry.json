@@ -1,0 +1,67 @@
+{
+  "extension": "means",
+  "modules": ["means"],
+  "classes": {
+    "Goal": {
+      "iri": "http://example.org/ontology/means/Goal",
+      "module": "means",
+      "description": "A stable end an actor is pursuing. Distinct from traj:goalRealizingTransition.",
+      "parents": ["UcoObject"],
+      "is_facet": false,
+      "properties": [
+        {"name": "pursuedBy", "type": "UcoObject", "cardinality": "exactly_one", "required": true, "description": "The actor who holds this goal."}
+      ],
+      "source": "means"
+    },
+    "Option": {
+      "iri": "http://example.org/ontology/means/Option",
+      "module": "means",
+      "description": "A means available at a state for a goal, whether or not it was walked.",
+      "parents": ["UcoObject"],
+      "is_facet": false,
+      "properties": [
+        {"name": "servesGoal", "type": "Goal", "cardinality": "one_or_more", "required": true, "description": "The goal this option serves."},
+        {"name": "availableAt", "type": "State", "cardinality": "one_or_more", "required": true, "description": "State at which the option is on the menu."},
+        {"name": "usesInstrument", "type": "UcoObject", "cardinality": "exactly_one", "required": true, "description": "Affordance or tool."},
+        {"name": "enactedTransition", "type": "Transition", "cardinality": "zero_or_one", "required": false, "description": "The walked transition, if this option was chosen."}
+      ],
+      "source": "means"
+    },
+    "OptionAssessment": {
+      "iri": "http://example.org/ontology/means/OptionAssessment",
+      "module": "means",
+      "description": "Inferred friction and feasibility reading. Not a utility.",
+      "parents": ["UcoObject"],
+      "is_facet": false,
+      "properties": [],
+      "source": "means"
+    },
+    "OffenderCapability": {
+      "iri": "http://example.org/ontology/means/OffenderCapability",
+      "module": "means",
+      "description": "What a particular actor can bring to an option. Local stand-in for UCO issue 682.",
+      "parents": ["UcoObject"],
+      "is_facet": false,
+      "properties": [],
+      "source": "means"
+    },
+    "Constraint": {
+      "iri": "http://example.org/ontology/means/Constraint",
+      "module": "means",
+      "description": "A wall, guardian, or access denial that removes an option from the menu.",
+      "parents": ["UcoObject"],
+      "is_facet": false,
+      "properties": [],
+      "source": "means"
+    },
+    "Selection": {
+      "iri": "http://example.org/ontology/means/Selection",
+      "module": "means",
+      "description": "Inferred pick from a menu of at least two options. selectionRule may be not_modeled. No reward.",
+      "parents": ["UcoObject"],
+      "is_facet": false,
+      "properties": [],
+      "source": "means"
+    }
+  }
+}

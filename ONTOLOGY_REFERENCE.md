@@ -4,9 +4,9 @@ Auto-generated reference for all classes, properties, and vocabulary types in th
 
 | Metric | Count |
 |--------|-------|
-| Classes | 2961 |
-| Direct properties | 2562 |
-| Modules | 84 |
+| Classes | 2980 |
+| Direct properties | 2610 |
+| Modules | 87 |
 | Vocabulary types | 54 |
 
 ## Table of Contents
@@ -66,8 +66,11 @@ Auto-generated reference for all classes, properties, and vocabulary types in th
 - [ext.cryptoinv.cryptoinv](#extcryptoinvcryptoinv) (14 classes)
 - [ext.drugs.drug](#extdrugsdrug) (1 classes)
 - [ext.elder-fraud.ef](#extelder-fraudef) (8 classes)
+- [ext.expense.expense](#extexpenseexpense) (2 classes)
 - [ext.extortion.ex](#extextortionex) (3 classes)
+- [ext.layered.lay](#extlayeredlay) (11 classes)
 - [ext.legalproc.legalproc](#extlegalproclegalproc) (18 classes)
+- [ext.means.means](#extmeansmeans) (6 classes)
 - [ext.rico.rico](#extricorico) (2 classes)
 - [ext.smishviz.smish](#extsmishvizsmish) (5 classes)
 - [ext.solveit.solveit-analysis](#extsolveitsolveit-analysis) (12 classes)
@@ -42477,6 +42480,64 @@ Auto-generated reference for all classes, properties, and vocabulary types in th
 | startTime | dateTime | zero_or_one | No | The time at which performance of the action began. |
 | subaction | Action | zero_or_more | No | References to other actions that make up part of a larger more complex action. |
 
+## ext.expense.expense
+
+### BenefitAnatomy
+
+*INFERRED anatomy of one transition. benefitSource is derived from facts about that transition, not from the name of the offense. not_from_person: the gain is not supplied by an identified person. retained: that person keeps the value. victim_sourced: a preexisting object of theirs changes hands and keeps its value. person_activity: the gain is their activity, it does not survive their removal, and they do not keep it. person_used: the gain is use of that person, or a product made from that use which did not exist beforehand. victim_targeted: the benefit is their absence. none: none of those. Must carry prov:wasGeneratedBy. Must never be typed traj:PhaseAssertion.*
+
+**Parents:** UcoObject | **IRI:** `http://example.org/ontology/expense/BenefitAnatomy`
+
+| Property | Type | Cardinality | Required | Description |
+|----------|------|-------------|----------|-------------|
+| createdBy | IdentityAbstraction | zero_or_one | No | The identity that created a characterization of a concept. |
+| description | string | zero_or_more | No | A description of a particular concept characterization. |
+| externalReference | ExternalReference | zero_or_more | No | Specifies a reference to a resource outside of the UCO. |
+| hasFacet | Facet | zero_or_more | No | Further sets of properties characterizing a concept based on the particular context of the class and of the particula... |
+| modifiedTime | dateTime | zero_or_more | No | Specifies the time that this particular version of the object was modified. The object creator can use the time it de... |
+| name | string | zero_or_one | No | The name of a particular concept characterization. |
+| objectCreatedTime | dateTime | zero_or_one | No | The time at which a characterization of a concept is created. This time pertains to the time of creating the record o... |
+| objectMarking | MarkingDefinitionAbstraction | zero_or_more | No | Marking definitions to be applied to a particular concept characterization in its entirety. |
+| objectStatus | string | zero_or_one | No | The current state of formality and acceptance for a UCO object. |
+| specVersion | string | zero_or_one | No | The version of UCO ontology or subontology specification used to characterize a concept. |
+| tag | string | zero_or_more | No | A generic tag/label. |
+| advantageDefect | string | exactly_one | Yes | What the instrument alleges about the advantage. deception: the person supplied the gain on a false basis. coercion: ... |
+| anatomyRule | string | exactly_one | Yes | Why these facts were read off the instrument. The derivation reads the booleans, advantageDefect, and the presence of... |
+| benefitSource | string | exactly_one | Yes | Derived, never freely chosen. not_from_person, retained, victim_sourced, person_activity, person_used, victim_targete... |
+| onTransition | Transition | exactly_one | Yes | The transition whose benefit this anatomy describes. |
+| personRetainsValue | boolean | exactly_one | Yes | True when the person who supplied the gain keeps its value. A wage the instrument says they kept is true. A taking or... |
+| preexisting | boolean | exactly_one | Yes | True when the transferred object existed before this act. Extraction takes what was already there. |
+| requiresPresence | boolean | exactly_one | Yes | True when the benefit requires the person to be present and producing. False when a taken object would remain without... |
+| suppliedByPerson | boolean | exactly_one | Yes | True when an identified person, or a company the instrument names as the holder of the thing or the doer of the work,... |
+| transferredObject | string | zero_or_one | No | The thing that passes from the victim side to the offender on this transition, in the words of the charging instrumen... |
+| valueSurvivesVictim | boolean | exactly_one | Yes | True when the object would keep its value to the offender if the victim were not removed. False when the benefit cons... |
+
+### ExploitationAssessment
+
+*INFERRED predicate over one traj:Trajectory. passesExploitationTest is true only for extractionTestStatus realized_at_expense: the goal transition's derived source is victim_sourced, person_activity, or person_used, and advantageDefect on that edge is deception, coercion, or vulnerability. passesExtractionTest is the preexisting-object half and is true only when that same edge is victim_sourced. exploitationOnset is the interval of the arriving phase of that goal edge, and only when the test passes. not_exploitation: a goal edge exists and the conjunction fails, including a completed crime that is not at a person's expense and including a minor who is not the source of the gain. not_realized and withheld_partial carry no goal edge and no onset. Not a verdict. Must carry prov:wasGeneratedBy.*
+
+**Parents:** UcoObject | **IRI:** `http://example.org/ontology/expense/ExploitationAssessment`
+
+| Property | Type | Cardinality | Required | Description |
+|----------|------|-------------|----------|-------------|
+| createdBy | IdentityAbstraction | zero_or_one | No | The identity that created a characterization of a concept. |
+| description | string | zero_or_more | No | A description of a particular concept characterization. |
+| externalReference | ExternalReference | zero_or_more | No | Specifies a reference to a resource outside of the UCO. |
+| hasFacet | Facet | zero_or_more | No | Further sets of properties characterizing a concept based on the particular context of the class and of the particula... |
+| modifiedTime | dateTime | zero_or_more | No | Specifies the time that this particular version of the object was modified. The object creator can use the time it de... |
+| name | string | zero_or_one | No | The name of a particular concept characterization. |
+| objectCreatedTime | dateTime | zero_or_one | No | The time at which a characterization of a concept is created. This time pertains to the time of creating the record o... |
+| objectMarking | MarkingDefinitionAbstraction | zero_or_more | No | Marking definitions to be applied to a particular concept characterization in its entirety. |
+| objectStatus | string | zero_or_one | No | The current state of formality and acceptance for a UCO object. |
+| specVersion | string | zero_or_one | No | The version of UCO ontology or subontology specification used to characterize a concept. |
+| tag | string | zero_or_more | No | A generic tag/label. |
+| assessesTrajectory | Trajectory | exactly_one | Yes | The observed trajectory this extraction test is about. The assessment does not alter the trajectory's phase assertions. |
+| extractionTestStatus | string | exactly_one | Yes | realized_at_expense, not_exploitation, not_realized, or withheld_partial. See expense:ExploitationAssessment. |
+| goalRealizingTransition | Transition | zero_or_one | No | The transition on which the terminal benefit is realized. Required for realized_at_expense and not_exploitation. Abse... |
+| hasBenefitAnatomy | BenefitAnatomy | one_or_more | Yes | Benefit anatomies considered for this trajectory, including the goal-realizing edge when one is asserted. |
+| passesExploitationTest | boolean | exactly_one | Yes | True only when extractionTestStatus is realized_at_expense. That status is available only when the goal edge derives ... |
+| passesExtractionTest | boolean | exactly_one | Yes | True only when the exploitation test passes and the goal edge's derived source is victim_sourced. A person_activity p... |
+
 ## ext.extortion.ex
 
 ### a_credential_theft
@@ -42550,6 +42611,349 @@ Auto-generated reference for all classes, properties, and vocabulary types in th
 *Threatening to publicly disseminate exfiltrated data unless a ransom is paid, using the stolen dataset itself as leverage. Affordance abused: leak-as-leverage. Source: press release, paras. 2-3 (quoted threats).*
 
 **Parents:** Action | **IRI:** `http://example.org/ontology/extortion/a_leak_threat`
+
+| Property | Type | Cardinality | Required | Description |
+|----------|------|-------------|----------|-------------|
+| createdBy | IdentityAbstraction | zero_or_one | No | The identity that created a characterization of a concept. |
+| description | string | zero_or_more | No | A description of a particular concept characterization. |
+| externalReference | ExternalReference | zero_or_more | No | Specifies a reference to a resource outside of the UCO. |
+| hasFacet | Facet | zero_or_more | No | Further sets of properties characterizing a concept based on the particular context of the class and of the particula... |
+| modifiedTime | dateTime | zero_or_more | No | Specifies the time that this particular version of the object was modified. The object creator can use the time it de... |
+| name | string | zero_or_one | No | The name of a particular concept characterization. |
+| objectCreatedTime | dateTime | zero_or_one | No | The time at which a characterization of a concept is created. This time pertains to the time of creating the record o... |
+| objectMarking | MarkingDefinitionAbstraction | zero_or_more | No | Marking definitions to be applied to a particular concept characterization in its entirety. |
+| objectStatus | string | zero_or_one | No | The current state of formality and acceptance for a UCO object. |
+| specVersion | string | zero_or_one | No | The version of UCO ontology or subontology specification used to characterize a concept. |
+| tag | string | zero_or_more | No | A generic tag/label. |
+| actionCount | nonNegativeInteger | zero_or_one | No | The number of times that the action was performed. |
+| actionStatus | string | zero_or_one | No | The current state of the action. |
+| endTime | dateTime | zero_or_one | No | The time at which performance of the action ended. |
+| environment | UcoObject | zero_or_one | No | The environment wherein an action occurs. |
+| error | UcoObject | zero_or_more | No | A characterization of the differences between the expected and the actual performance of the action. |
+| instrument | UcoObject | zero_or_more | No | The things used to perform an action. |
+| location | Location | zero_or_more | No | The locations where an action occurs. |
+| object | UcoObject | zero_or_more | No | The things that the action is performed on/against. |
+| participant | UcoObject | zero_or_more | No | The supporting (non-primary) performers of an action. |
+| performer | UcoObject | zero_or_one | No | The primary performer of an action. |
+| result | UcoObject | zero_or_more | No | The things resulting from performing an action. |
+| startTime | dateTime | zero_or_one | No | The time at which performance of the action began. |
+| subaction | Action | zero_or_more | No | References to other actions that make up part of a larger more complex action. |
+
+## ext.layered.lay
+
+### Coupling
+
+*First-class inter-layer (or endpoint-to-endpoint) coupling inside a lay:ExploitationStateMachine. Expresses sequential hand-offs (enables), leverage reuse (providesLeverageFor), production of occupancy (produces), shared-factor links (sharesFactor), and explicit temporal overlap for concurrent/parallel tracks (temporallyOverlaps). Optionally cites a uco-core:Relationship via lay:realizedBy for SPARQL/interop with open-vocab relationship graphs. Prefer Coupling over bare Relationship alone when the edge participates in ESM composition semantics. Temporal overlap semantics align with W3C OWL-Time interval relations (https://www.w3.org/TR/owl-time/#interval-relations).*
+
+**Parents:** UcoObject | **IRI:** `http://example.org/ontology/layered/Coupling`
+
+| Property | Type | Cardinality | Required | Description |
+|----------|------|-------------|----------|-------------|
+| createdBy | IdentityAbstraction | zero_or_one | No | The identity that created a characterization of a concept. |
+| description | string | zero_or_more | No | A description of a particular concept characterization. |
+| externalReference | ExternalReference | zero_or_more | No | Specifies a reference to a resource outside of the UCO. |
+| hasFacet | Facet | zero_or_more | No | Further sets of properties characterizing a concept based on the particular context of the class and of the particula... |
+| modifiedTime | dateTime | zero_or_more | No | Specifies the time that this particular version of the object was modified. The object creator can use the time it de... |
+| name | string | zero_or_one | No | The name of a particular concept characterization. |
+| objectCreatedTime | dateTime | zero_or_one | No | The time at which a characterization of a concept is created. This time pertains to the time of creating the record o... |
+| objectMarking | MarkingDefinitionAbstraction | zero_or_more | No | Marking definitions to be applied to a particular concept characterization in its entirety. |
+| objectStatus | string | zero_or_one | No | The current state of formality and acceptance for a UCO object. |
+| specVersion | string | zero_or_one | No | The version of UCO ontology or subontology specification used to characterize a concept. |
+| tag | string | zero_or_more | No | A generic tag/label. |
+| couplingKind | string | exactly_one | Yes | Controlled vocabulary (SHACL sh:in) for Coupling semantics: 'enables' (sequential hand-off — source occupancy/action ... |
+| fromLayer | Layer | zero_or_one | No | Source Layer of a directed Coupling. |
+| realizedBy | Relationship | zero_or_one | No | Optional uco-core:Relationship that materializes the same edge in open-vocab Relationship form (e.g. kindOfRelationsh... |
+| toLayer | Layer | zero_or_one | No | Target Layer of a directed Coupling. |
+
+### ExploitationStateMachine
+
+*Case-level (or subject-level) composition of one or more traj:Trajectory machines into a layered Exploitation State Machine (ESM). Each participating machine remains its own alphabet (S/A) via a lay:Layer; cross-machine coupling is expressed with lay:Coupling, never by merging States into one mega-S. Supports full or partial case coverage, single or multiple trajectories, and sequential / concurrent / parallel / hybrid composition patterns. Domain-agnostic — offense, legal-process, or investigation machines may all participate. Motivated by multi-thread digital-forensic and cyber-investigation composition needs; see NIST SP 800-61r2 for phase-oriented incident practice (https://csrc.nist.gov/publications/detail/sp/800-61/rev-2/final).*
+
+**Parents:** UcoObject | **IRI:** `http://example.org/ontology/layered/ExploitationStateMachine`
+
+| Property | Type | Cardinality | Required | Description |
+|----------|------|-------------|----------|-------------|
+| createdBy | IdentityAbstraction | zero_or_one | No | The identity that created a characterization of a concept. |
+| description | string | zero_or_more | No | A description of a particular concept characterization. |
+| externalReference | ExternalReference | zero_or_more | No | Specifies a reference to a resource outside of the UCO. |
+| hasFacet | Facet | zero_or_more | No | Further sets of properties characterizing a concept based on the particular context of the class and of the particula... |
+| modifiedTime | dateTime | zero_or_more | No | Specifies the time that this particular version of the object was modified. The object creator can use the time it de... |
+| name | string | zero_or_one | No | The name of a particular concept characterization. |
+| objectCreatedTime | dateTime | zero_or_one | No | The time at which a characterization of a concept is created. This time pertains to the time of creating the record o... |
+| objectMarking | MarkingDefinitionAbstraction | zero_or_more | No | Marking definitions to be applied to a particular concept characterization in its entirety. |
+| objectStatus | string | zero_or_one | No | The current state of formality and acceptance for a UCO object. |
+| specVersion | string | zero_or_one | No | The version of UCO ontology or subontology specification used to characterize a concept. |
+| tag | string | zero_or_more | No | A generic tag/label. |
+| completeness | string | exactly_one | Yes | Whether the ESM claims to model all known offense/process threads for the subject ('full') or only a sourced subset (... |
+| compositionPattern | string | exactly_one | Yes | Overall composition pattern of the ESM. Controlled vocabulary (SHACL sh:in): 'sequential' (layers ordered by enables ... |
+| hasAggregateModel | StateMachineModel | zero_or_one | No | Optional traj:StateMachineModel that learnedFrom the union of layer trajectories for cross-layer analytics. MUST NOT ... |
+| hasCoupling | Coupling | zero_or_more | No | Links an Exploitation State Machine to a Coupling edge that connects its layers or their endpoints. |
+| hasExpenseAssessment | UcoObject | zero_or_more | No | Optional benefit-at-expense assessment. When the expense extension is loaded the value should be an expense:Exploitat... |
+| hasGoal | UcoObject | zero_or_more | No | Stable goal of the composed machine. When the means extension is loaded the value should be a means:Goal. This ontolo... |
+| hasLayer | Layer | one_or_more | Yes | Links an Exploitation State Machine to one of its Layer slots. An ESM MUST have at least one Layer. |
+
+### Layer
+
+*One machine slot inside a lay:ExploitationStateMachine. Binds exactly one traj:Trajectory (observed occupancy history) and optionally one traj:StateMachineModel (per-layer inferred alphabet model). Carries coverage (full vs partial run of the modeled alphabet), an ordering index for sequential chains, and an optional concurrency group for parallel/concurrent tracks. Domain-agnostic; optional lay:domainAlphabet points at a SKOS scheme or other vocabulary identifying the phase alphabet.*
+
+**Parents:** UcoObject | **IRI:** `http://example.org/ontology/layered/Layer`
+
+| Property | Type | Cardinality | Required | Description |
+|----------|------|-------------|----------|-------------|
+| createdBy | IdentityAbstraction | zero_or_one | No | The identity that created a characterization of a concept. |
+| description | string | zero_or_more | No | A description of a particular concept characterization. |
+| externalReference | ExternalReference | zero_or_more | No | Specifies a reference to a resource outside of the UCO. |
+| hasFacet | Facet | zero_or_more | No | Further sets of properties characterizing a concept based on the particular context of the class and of the particula... |
+| modifiedTime | dateTime | zero_or_more | No | Specifies the time that this particular version of the object was modified. The object creator can use the time it de... |
+| name | string | zero_or_one | No | The name of a particular concept characterization. |
+| objectCreatedTime | dateTime | zero_or_one | No | The time at which a characterization of a concept is created. This time pertains to the time of creating the record o... |
+| objectMarking | MarkingDefinitionAbstraction | zero_or_more | No | Marking definitions to be applied to a particular concept characterization in its entirety. |
+| objectStatus | string | zero_or_one | No | The current state of formality and acceptance for a UCO object. |
+| specVersion | string | zero_or_one | No | The version of UCO ontology or subontology specification used to characterize a concept. |
+| tag | string | zero_or_more | No | A generic tag/label. |
+| concurrencyGroup | string | zero_or_one | No | Opaque group identifier. Layers sharing the same concurrencyGroup are intended to run concurrent or parallel within t... |
+| coverage | string | exactly_one | Yes | Whether this Layer's Trajectory runs the full modeled alphabet endpoint ('full') or only a partial/mid-chain occupanc... |
+| domainAlphabet | ConceptScheme | zero_or_one | No | Optional SKOS ConceptScheme identifying the phase vocabulary (S) this Layer uses — e.g. a forced-labor or grooming ph... |
+| hasMachineModel | StateMachineModel | zero_or_one | No | Optional per-layer traj:StateMachineModel (inferred alphabet / transition estimates for this Layer's machine only). |
+| layerIndex | nonNegativeInteger | exactly_one | Yes | Zero- or one-based order of this Layer within sequential composition (hand-off chains). Concurrent/parallel Layers ma... |
+| occupiesTrajectory | Trajectory | exactly_one | Yes | The traj:Trajectory whose observed phase occupancy this Layer carries. Exactly one per Layer. |
+
+### a_bring_to_us
+
+*Bringing groomed child victims from Honduras into the United States. Affordance abused: cross-border migration channel controlled by the offender. Source: Spokesman-Review 2025-04-13.*
+
+**Parents:** Action | **IRI:** `http://example.org/ontology/layered/a_bring_to_us`
+
+| Property | Type | Cardinality | Required | Description |
+|----------|------|-------------|----------|-------------|
+| createdBy | IdentityAbstraction | zero_or_one | No | The identity that created a characterization of a concept. |
+| description | string | zero_or_more | No | A description of a particular concept characterization. |
+| externalReference | ExternalReference | zero_or_more | No | Specifies a reference to a resource outside of the UCO. |
+| hasFacet | Facet | zero_or_more | No | Further sets of properties characterizing a concept based on the particular context of the class and of the particula... |
+| modifiedTime | dateTime | zero_or_more | No | Specifies the time that this particular version of the object was modified. The object creator can use the time it de... |
+| name | string | zero_or_one | No | The name of a particular concept characterization. |
+| objectCreatedTime | dateTime | zero_or_one | No | The time at which a characterization of a concept is created. This time pertains to the time of creating the record o... |
+| objectMarking | MarkingDefinitionAbstraction | zero_or_more | No | Marking definitions to be applied to a particular concept characterization in its entirety. |
+| objectStatus | string | zero_or_one | No | The current state of formality and acceptance for a UCO object. |
+| specVersion | string | zero_or_one | No | The version of UCO ontology or subontology specification used to characterize a concept. |
+| tag | string | zero_or_more | No | A generic tag/label. |
+| actionCount | nonNegativeInteger | zero_or_one | No | The number of times that the action was performed. |
+| actionStatus | string | zero_or_one | No | The current state of the action. |
+| endTime | dateTime | zero_or_one | No | The time at which performance of the action ended. |
+| environment | UcoObject | zero_or_one | No | The environment wherein an action occurs. |
+| error | UcoObject | zero_or_more | No | A characterization of the differences between the expected and the actual performance of the action. |
+| instrument | UcoObject | zero_or_more | No | The things used to perform an action. |
+| location | Location | zero_or_more | No | The locations where an action occurs. |
+| object | UcoObject | zero_or_more | No | The things that the action is performed on/against. |
+| participant | UcoObject | zero_or_more | No | The supporting (non-primary) performers of an action. |
+| performer | UcoObject | zero_or_one | No | The primary performer of an action. |
+| result | UcoObject | zero_or_more | No | The things resulting from performing an action. |
+| startTime | dateTime | zero_or_one | No | The time at which performance of the action began. |
+| subaction | Action | zero_or_more | No | References to other actions that make up part of a larger more complex action. |
+
+### a_digital_surveillance_control
+
+*Requiring victims to provide cellphone location and passwords to their social media accounts. Affordance abused: victim-owned digital accounts/devices. Source: Spokesman-Review 2025-04-13.*
+
+**Parents:** Action | **IRI:** `http://example.org/ontology/layered/a_digital_surveillance_control`
+
+| Property | Type | Cardinality | Required | Description |
+|----------|------|-------------|----------|-------------|
+| createdBy | IdentityAbstraction | zero_or_one | No | The identity that created a characterization of a concept. |
+| description | string | zero_or_more | No | A description of a particular concept characterization. |
+| externalReference | ExternalReference | zero_or_more | No | Specifies a reference to a resource outside of the UCO. |
+| hasFacet | Facet | zero_or_more | No | Further sets of properties characterizing a concept based on the particular context of the class and of the particula... |
+| modifiedTime | dateTime | zero_or_more | No | Specifies the time that this particular version of the object was modified. The object creator can use the time it de... |
+| name | string | zero_or_one | No | The name of a particular concept characterization. |
+| objectCreatedTime | dateTime | zero_or_one | No | The time at which a characterization of a concept is created. This time pertains to the time of creating the record o... |
+| objectMarking | MarkingDefinitionAbstraction | zero_or_more | No | Marking definitions to be applied to a particular concept characterization in its entirety. |
+| objectStatus | string | zero_or_one | No | The current state of formality and acceptance for a UCO object. |
+| specVersion | string | zero_or_one | No | The version of UCO ontology or subontology specification used to characterize a concept. |
+| tag | string | zero_or_more | No | A generic tag/label. |
+| actionCount | nonNegativeInteger | zero_or_one | No | The number of times that the action was performed. |
+| actionStatus | string | zero_or_one | No | The current state of the action. |
+| endTime | dateTime | zero_or_one | No | The time at which performance of the action ended. |
+| environment | UcoObject | zero_or_one | No | The environment wherein an action occurs. |
+| error | UcoObject | zero_or_more | No | A characterization of the differences between the expected and the actual performance of the action. |
+| instrument | UcoObject | zero_or_more | No | The things used to perform an action. |
+| location | Location | zero_or_more | No | The locations where an action occurs. |
+| object | UcoObject | zero_or_more | No | The things that the action is performed on/against. |
+| participant | UcoObject | zero_or_more | No | The supporting (non-primary) performers of an action. |
+| performer | UcoObject | zero_or_one | No | The primary performer of an action. |
+| result | UcoObject | zero_or_more | No | The things resulting from performing an action. |
+| startTime | dateTime | zero_or_one | No | The time at which performance of the action began. |
+| subaction | Action | zero_or_more | No | References to other actions that make up part of a larger more complex action. |
+
+### a_force_child_sex_acts
+
+*Forcing minors brought to Pasco to engage in sexual acts. Affordance abused: residential control and prior CSAM/immigration leverage. Source: Spokesman-Review 2025-04-13.*
+
+**Parents:** Action | **IRI:** `http://example.org/ontology/layered/a_force_child_sex_acts`
+
+| Property | Type | Cardinality | Required | Description |
+|----------|------|-------------|----------|-------------|
+| createdBy | IdentityAbstraction | zero_or_one | No | The identity that created a characterization of a concept. |
+| description | string | zero_or_more | No | A description of a particular concept characterization. |
+| externalReference | ExternalReference | zero_or_more | No | Specifies a reference to a resource outside of the UCO. |
+| hasFacet | Facet | zero_or_more | No | Further sets of properties characterizing a concept based on the particular context of the class and of the particula... |
+| modifiedTime | dateTime | zero_or_more | No | Specifies the time that this particular version of the object was modified. The object creator can use the time it de... |
+| name | string | zero_or_one | No | The name of a particular concept characterization. |
+| objectCreatedTime | dateTime | zero_or_one | No | The time at which a characterization of a concept is created. This time pertains to the time of creating the record o... |
+| objectMarking | MarkingDefinitionAbstraction | zero_or_more | No | Marking definitions to be applied to a particular concept characterization in its entirety. |
+| objectStatus | string | zero_or_one | No | The current state of formality and acceptance for a UCO object. |
+| specVersion | string | zero_or_one | No | The version of UCO ontology or subontology specification used to characterize a concept. |
+| tag | string | zero_or_more | No | A generic tag/label. |
+| actionCount | nonNegativeInteger | zero_or_one | No | The number of times that the action was performed. |
+| actionStatus | string | zero_or_one | No | The current state of the action. |
+| endTime | dateTime | zero_or_one | No | The time at which performance of the action ended. |
+| environment | UcoObject | zero_or_one | No | The environment wherein an action occurs. |
+| error | UcoObject | zero_or_more | No | A characterization of the differences between the expected and the actual performance of the action. |
+| instrument | UcoObject | zero_or_more | No | The things used to perform an action. |
+| location | Location | zero_or_more | No | The locations where an action occurs. |
+| object | UcoObject | zero_or_more | No | The things that the action is performed on/against. |
+| participant | UcoObject | zero_or_more | No | The supporting (non-primary) performers of an action. |
+| performer | UcoObject | zero_or_one | No | The primary performer of an action. |
+| result | UcoObject | zero_or_more | No | The things resulting from performing an action. |
+| startTime | dateTime | zero_or_one | No | The time at which performance of the action began. |
+| subaction | Action | zero_or_more | No | References to other actions that make up part of a larger more complex action. |
+
+### a_force_sexual_activity
+
+*Forcing a child to participate in sexual activities. Affordance abused: power asymmetry over dependent minors. Source: Spokesman-Review 2025-04-13.*
+
+**Parents:** Action | **IRI:** `http://example.org/ontology/layered/a_force_sexual_activity`
+
+| Property | Type | Cardinality | Required | Description |
+|----------|------|-------------|----------|-------------|
+| createdBy | IdentityAbstraction | zero_or_one | No | The identity that created a characterization of a concept. |
+| description | string | zero_or_more | No | A description of a particular concept characterization. |
+| externalReference | ExternalReference | zero_or_more | No | Specifies a reference to a resource outside of the UCO. |
+| hasFacet | Facet | zero_or_more | No | Further sets of properties characterizing a concept based on the particular context of the class and of the particula... |
+| modifiedTime | dateTime | zero_or_more | No | Specifies the time that this particular version of the object was modified. The object creator can use the time it de... |
+| name | string | zero_or_one | No | The name of a particular concept characterization. |
+| objectCreatedTime | dateTime | zero_or_one | No | The time at which a characterization of a concept is created. This time pertains to the time of creating the record o... |
+| objectMarking | MarkingDefinitionAbstraction | zero_or_more | No | Marking definitions to be applied to a particular concept characterization in its entirety. |
+| objectStatus | string | zero_or_one | No | The current state of formality and acceptance for a UCO object. |
+| specVersion | string | zero_or_one | No | The version of UCO ontology or subontology specification used to characterize a concept. |
+| tag | string | zero_or_more | No | A generic tag/label. |
+| actionCount | nonNegativeInteger | zero_or_one | No | The number of times that the action was performed. |
+| actionStatus | string | zero_or_one | No | The current state of the action. |
+| endTime | dateTime | zero_or_one | No | The time at which performance of the action ended. |
+| environment | UcoObject | zero_or_one | No | The environment wherein an action occurs. |
+| error | UcoObject | zero_or_more | No | A characterization of the differences between the expected and the actual performance of the action. |
+| instrument | UcoObject | zero_or_more | No | The things used to perform an action. |
+| location | Location | zero_or_more | No | The locations where an action occurs. |
+| object | UcoObject | zero_or_more | No | The things that the action is performed on/against. |
+| participant | UcoObject | zero_or_more | No | The supporting (non-primary) performers of an action. |
+| performer | UcoObject | zero_or_one | No | The primary performer of an action. |
+| result | UcoObject | zero_or_more | No | The things resulting from performing an action. |
+| startTime | dateTime | zero_or_one | No | The time at which performance of the action began. |
+| subaction | Action | zero_or_more | No | References to other actions that make up part of a larger more complex action. |
+
+### a_harbor_aliens
+
+*Harboring victims in a four-plex owned by the offender and spouse. Affordance abused: private multifamily housing as captivity/placement site. Source: Spokesman-Review 2025-04-13 (harboring illegal aliens charge).*
+
+**Parents:** Action | **IRI:** `http://example.org/ontology/layered/a_harbor_aliens`
+
+| Property | Type | Cardinality | Required | Description |
+|----------|------|-------------|----------|-------------|
+| createdBy | IdentityAbstraction | zero_or_one | No | The identity that created a characterization of a concept. |
+| description | string | zero_or_more | No | A description of a particular concept characterization. |
+| externalReference | ExternalReference | zero_or_more | No | Specifies a reference to a resource outside of the UCO. |
+| hasFacet | Facet | zero_or_more | No | Further sets of properties characterizing a concept based on the particular context of the class and of the particula... |
+| modifiedTime | dateTime | zero_or_more | No | Specifies the time that this particular version of the object was modified. The object creator can use the time it de... |
+| name | string | zero_or_one | No | The name of a particular concept characterization. |
+| objectCreatedTime | dateTime | zero_or_one | No | The time at which a characterization of a concept is created. This time pertains to the time of creating the record o... |
+| objectMarking | MarkingDefinitionAbstraction | zero_or_more | No | Marking definitions to be applied to a particular concept characterization in its entirety. |
+| objectStatus | string | zero_or_one | No | The current state of formality and acceptance for a UCO object. |
+| specVersion | string | zero_or_one | No | The version of UCO ontology or subontology specification used to characterize a concept. |
+| tag | string | zero_or_more | No | A generic tag/label. |
+| actionCount | nonNegativeInteger | zero_or_one | No | The number of times that the action was performed. |
+| actionStatus | string | zero_or_one | No | The current state of the action. |
+| endTime | dateTime | zero_or_one | No | The time at which performance of the action ended. |
+| environment | UcoObject | zero_or_one | No | The environment wherein an action occurs. |
+| error | UcoObject | zero_or_more | No | A characterization of the differences between the expected and the actual performance of the action. |
+| instrument | UcoObject | zero_or_more | No | The things used to perform an action. |
+| location | Location | zero_or_more | No | The locations where an action occurs. |
+| object | UcoObject | zero_or_more | No | The things that the action is performed on/against. |
+| participant | UcoObject | zero_or_more | No | The supporting (non-primary) performers of an action. |
+| performer | UcoObject | zero_or_one | No | The primary performer of an action. |
+| result | UcoObject | zero_or_more | No | The things resulting from performing an action. |
+| startTime | dateTime | zero_or_one | No | The time at which performance of the action began. |
+| subaction | Action | zero_or_more | No | References to other actions that make up part of a larger more complex action. |
+
+### a_material_induce
+
+*Providing housing, schooling, food, and gifts such as electronic devices to children living in poverty to create dependency. Affordance abused: caregiver/provider role and gift economy. Source: Spokesman-Review 2025-04-13.*
+
+**Parents:** Action | **IRI:** `http://example.org/ontology/layered/a_material_induce`
+
+| Property | Type | Cardinality | Required | Description |
+|----------|------|-------------|----------|-------------|
+| createdBy | IdentityAbstraction | zero_or_one | No | The identity that created a characterization of a concept. |
+| description | string | zero_or_more | No | A description of a particular concept characterization. |
+| externalReference | ExternalReference | zero_or_more | No | Specifies a reference to a resource outside of the UCO. |
+| hasFacet | Facet | zero_or_more | No | Further sets of properties characterizing a concept based on the particular context of the class and of the particula... |
+| modifiedTime | dateTime | zero_or_more | No | Specifies the time that this particular version of the object was modified. The object creator can use the time it de... |
+| name | string | zero_or_one | No | The name of a particular concept characterization. |
+| objectCreatedTime | dateTime | zero_or_one | No | The time at which a characterization of a concept is created. This time pertains to the time of creating the record o... |
+| objectMarking | MarkingDefinitionAbstraction | zero_or_more | No | Marking definitions to be applied to a particular concept characterization in its entirety. |
+| objectStatus | string | zero_or_one | No | The current state of formality and acceptance for a UCO object. |
+| specVersion | string | zero_or_one | No | The version of UCO ontology or subontology specification used to characterize a concept. |
+| tag | string | zero_or_more | No | A generic tag/label. |
+| actionCount | nonNegativeInteger | zero_or_one | No | The number of times that the action was performed. |
+| actionStatus | string | zero_or_one | No | The current state of the action. |
+| endTime | dateTime | zero_or_one | No | The time at which performance of the action ended. |
+| environment | UcoObject | zero_or_one | No | The environment wherein an action occurs. |
+| error | UcoObject | zero_or_more | No | A characterization of the differences between the expected and the actual performance of the action. |
+| instrument | UcoObject | zero_or_more | No | The things used to perform an action. |
+| location | Location | zero_or_more | No | The locations where an action occurs. |
+| object | UcoObject | zero_or_more | No | The things that the action is performed on/against. |
+| participant | UcoObject | zero_or_more | No | The supporting (non-primary) performers of an action. |
+| performer | UcoObject | zero_or_one | No | The primary performer of an action. |
+| result | UcoObject | zero_or_more | No | The things resulting from performing an action. |
+| startTime | dateTime | zero_or_one | No | The time at which performance of the action began. |
+| subaction | Action | zero_or_more | No | References to other actions that make up part of a larger more complex action. |
+
+### a_produce_csam
+
+*Requiring sexually explicit videos and pictures from children as a condition of bringing them to the United States. Affordance abused: digital messaging / device capture of CSAM used as both product and leverage. Source: Spokesman-Review 2025-04-13.*
+
+**Parents:** Action | **IRI:** `http://example.org/ontology/layered/a_produce_csam`
+
+| Property | Type | Cardinality | Required | Description |
+|----------|------|-------------|----------|-------------|
+| createdBy | IdentityAbstraction | zero_or_one | No | The identity that created a characterization of a concept. |
+| description | string | zero_or_more | No | A description of a particular concept characterization. |
+| externalReference | ExternalReference | zero_or_more | No | Specifies a reference to a resource outside of the UCO. |
+| hasFacet | Facet | zero_or_more | No | Further sets of properties characterizing a concept based on the particular context of the class and of the particula... |
+| modifiedTime | dateTime | zero_or_more | No | Specifies the time that this particular version of the object was modified. The object creator can use the time it de... |
+| name | string | zero_or_one | No | The name of a particular concept characterization. |
+| objectCreatedTime | dateTime | zero_or_one | No | The time at which a characterization of a concept is created. This time pertains to the time of creating the record o... |
+| objectMarking | MarkingDefinitionAbstraction | zero_or_more | No | Marking definitions to be applied to a particular concept characterization in its entirety. |
+| objectStatus | string | zero_or_one | No | The current state of formality and acceptance for a UCO object. |
+| specVersion | string | zero_or_one | No | The version of UCO ontology or subontology specification used to characterize a concept. |
+| tag | string | zero_or_more | No | A generic tag/label. |
+| actionCount | nonNegativeInteger | zero_or_one | No | The number of times that the action was performed. |
+| actionStatus | string | zero_or_one | No | The current state of the action. |
+| endTime | dateTime | zero_or_one | No | The time at which performance of the action ended. |
+| environment | UcoObject | zero_or_one | No | The environment wherein an action occurs. |
+| error | UcoObject | zero_or_more | No | A characterization of the differences between the expected and the actual performance of the action. |
+| instrument | UcoObject | zero_or_more | No | The things used to perform an action. |
+| location | Location | zero_or_more | No | The locations where an action occurs. |
+| object | UcoObject | zero_or_more | No | The things that the action is performed on/against. |
+| participant | UcoObject | zero_or_more | No | The supporting (non-primary) performers of an action. |
+| performer | UcoObject | zero_or_one | No | The primary performer of an action. |
+| result | UcoObject | zero_or_more | No | The things resulting from performing an action. |
+| startTime | dateTime | zero_or_one | No | The time at which performance of the action began. |
+| subaction | Action | zero_or_more | No | References to other actions that make up part of a larger more complex action. |
+
+### a_threaten_ice_and_exposure
+
+*Threatening to contact immigration and to release videos of victims to their church pastor if they refuse sexual acts. Affordance abused: immigration status + prior CSAM + faith-community exposure. Source: Spokesman-Review 2025-04-13.*
+
+**Parents:** Action | **IRI:** `http://example.org/ontology/layered/a_threaten_ice_and_exposure`
 
 | Property | Type | Cardinality | Required | Description |
 |----------|------|-------------|----------|-------------|
@@ -42996,6 +43400,143 @@ Auto-generated reference for all classes, properties, and vocabulary types in th
 | tag | string | zero_or_more | No | A generic tag/label. |
 | concernsCharge | CriminalCharge | zero_or_more | No | Links a plea, proceeding, verdict, sentence, forfeiture order, or restitution order to the criminal charge(s) it conc... |
 | verdictType | string | exactly_one | Yes | The determination recorded by the verdict, as an open vocabulary. Recommended values: 'guilty', 'not-guilty'. |
+
+## ext.means.means
+
+### Constraint
+
+*A condition that takes an option out of the action-space: a wall, a capable guardian, or an access denial. Distinct from friction, which is an OptionAssessment level and leaves the option in the action-space, and distinct from traj:terminalPolarity disrupted, which records that an observed trajectory was cut off after it was already on an edge. See Cornish 1994 on situational prevention, https://popcenter.asu.edu/sites/default/files/library/crimeprevention/volume_03/06_cornish.pdf.*
+
+**Parents:** UcoObject | **IRI:** `http://example.org/ontology/means/Constraint`
+
+| Property | Type | Cardinality | Required | Description |
+|----------|------|-------------|----------|-------------|
+| createdBy | IdentityAbstraction | zero_or_one | No | The identity that created a characterization of a concept. |
+| description | string | zero_or_more | No | A description of a particular concept characterization. |
+| externalReference | ExternalReference | zero_or_more | No | Specifies a reference to a resource outside of the UCO. |
+| hasFacet | Facet | zero_or_more | No | Further sets of properties characterizing a concept based on the particular context of the class and of the particula... |
+| modifiedTime | dateTime | zero_or_more | No | Specifies the time that this particular version of the object was modified. The object creator can use the time it de... |
+| name | string | zero_or_one | No | The name of a particular concept characterization. |
+| objectCreatedTime | dateTime | zero_or_one | No | The time at which a characterization of a concept is created. This time pertains to the time of creating the record o... |
+| objectMarking | MarkingDefinitionAbstraction | zero_or_more | No | Marking definitions to be applied to a particular concept characterization in its entirety. |
+| objectStatus | string | zero_or_one | No | The current state of formality and acceptance for a UCO object. |
+| specVersion | string | zero_or_one | No | The version of UCO ontology or subontology specification used to characterize a concept. |
+| tag | string | zero_or_more | No | A generic tag/label. |
+| constraintKind | string | exactly_one | Yes | wall, guardian, or access_denial. wall makes the option infeasible in the current environment. guardian is a person o... |
+| removesOption | Option | one_or_more | Yes | An option this constraint takes off the menu. The matching OptionAssessment should say feasibility removed. |
+
+### Goal
+
+*A stable end an actor is pursuing. Distinct from traj:goalRealizingTransition, which is the edge where a benefit-at-expense test is applied, and distinct from an offense-type alphabet. Several options may serve one goal, which is how an instrument can be replaced without changing the goal. See Cornish 1994, https://popcenter.asu.edu/sites/default/files/library/crimeprevention/volume_03/06_cornish.pdf.*
+
+**Parents:** UcoObject | **IRI:** `http://example.org/ontology/means/Goal`
+
+| Property | Type | Cardinality | Required | Description |
+|----------|------|-------------|----------|-------------|
+| createdBy | IdentityAbstraction | zero_or_one | No | The identity that created a characterization of a concept. |
+| description | string | zero_or_more | No | A description of a particular concept characterization. |
+| externalReference | ExternalReference | zero_or_more | No | Specifies a reference to a resource outside of the UCO. |
+| hasFacet | Facet | zero_or_more | No | Further sets of properties characterizing a concept based on the particular context of the class and of the particula... |
+| modifiedTime | dateTime | zero_or_more | No | Specifies the time that this particular version of the object was modified. The object creator can use the time it de... |
+| name | string | zero_or_one | No | The name of a particular concept characterization. |
+| objectCreatedTime | dateTime | zero_or_one | No | The time at which a characterization of a concept is created. This time pertains to the time of creating the record o... |
+| objectMarking | MarkingDefinitionAbstraction | zero_or_more | No | Marking definitions to be applied to a particular concept characterization in its entirety. |
+| objectStatus | string | zero_or_one | No | The current state of formality and acceptance for a UCO object. |
+| specVersion | string | zero_or_one | No | The version of UCO ontology or subontology specification used to characterize a concept. |
+| tag | string | zero_or_more | No | A generic tag/label. |
+
+### OffenderCapability
+
+*What a particular actor can bring to bear on an option: access, skill, a co-actor, or a resource. Local stand-in for the Capability class in UCO issue 682 (https://github.com/ucoProject/UCO/issues/682), which already covers a person or threat actor's ability to do something. Not toolcap:BenchmarkObservation, not a forensic-tool module, and not cacontology-platforms:PlatformAffordance (that class is the platform feature, which belongs on usesInstrument).*
+
+**Parents:** UcoObject | **IRI:** `http://example.org/ontology/means/OffenderCapability`
+
+| Property | Type | Cardinality | Required | Description |
+|----------|------|-------------|----------|-------------|
+| createdBy | IdentityAbstraction | zero_or_one | No | The identity that created a characterization of a concept. |
+| description | string | zero_or_more | No | A description of a particular concept characterization. |
+| externalReference | ExternalReference | zero_or_more | No | Specifies a reference to a resource outside of the UCO. |
+| hasFacet | Facet | zero_or_more | No | Further sets of properties characterizing a concept based on the particular context of the class and of the particula... |
+| modifiedTime | dateTime | zero_or_more | No | Specifies the time that this particular version of the object was modified. The object creator can use the time it de... |
+| name | string | zero_or_one | No | The name of a particular concept characterization. |
+| objectCreatedTime | dateTime | zero_or_one | No | The time at which a characterization of a concept is created. This time pertains to the time of creating the record o... |
+| objectMarking | MarkingDefinitionAbstraction | zero_or_more | No | Marking definitions to be applied to a particular concept characterization in its entirety. |
+| objectStatus | string | zero_or_one | No | The current state of formality and acceptance for a UCO object. |
+| specVersion | string | zero_or_one | No | The version of UCO ontology or subontology specification used to characterize a concept. |
+| tag | string | zero_or_more | No | A generic tag/label. |
+| enablesOption | Option | one_or_more | Yes | An option this capability puts on that actor's menu. |
+
+### Option
+
+*One means in the action-space at a traj:State for a means:Goal, whether or not a trajectory walked it. The options available at a state are that state's action-space. The instrument is an affordance or tool. When the option was walked, enactedTransition points at that traj:Transition, whose uco-action:Action still carries the same instrument on uco-action:instrument. Observed options cite prov:wasDerivedFrom. See Cornish 1994, https://popcenter.asu.edu/sites/default/files/library/crimeprevention/volume_03/06_cornish.pdf.*
+
+**Parents:** UcoObject | **IRI:** `http://example.org/ontology/means/Option`
+
+| Property | Type | Cardinality | Required | Description |
+|----------|------|-------------|----------|-------------|
+| createdBy | IdentityAbstraction | zero_or_one | No | The identity that created a characterization of a concept. |
+| description | string | zero_or_more | No | A description of a particular concept characterization. |
+| externalReference | ExternalReference | zero_or_more | No | Specifies a reference to a resource outside of the UCO. |
+| hasFacet | Facet | zero_or_more | No | Further sets of properties characterizing a concept based on the particular context of the class and of the particula... |
+| modifiedTime | dateTime | zero_or_more | No | Specifies the time that this particular version of the object was modified. The object creator can use the time it de... |
+| name | string | zero_or_one | No | The name of a particular concept characterization. |
+| objectCreatedTime | dateTime | zero_or_one | No | The time at which a characterization of a concept is created. This time pertains to the time of creating the record o... |
+| objectMarking | MarkingDefinitionAbstraction | zero_or_more | No | Marking definitions to be applied to a particular concept characterization in its entirety. |
+| objectStatus | string | zero_or_one | No | The current state of formality and acceptance for a UCO object. |
+| specVersion | string | zero_or_one | No | The version of UCO ontology or subontology specification used to characterize a concept. |
+| tag | string | zero_or_more | No | A generic tag/label. |
+| availableAt | State | one_or_more | Yes | A state at which this option is on the menu. An option may be available at more than one state. |
+| enactedTransition | Transition | zero_or_one | No | The traj:Transition that walked this option. Omit when the option was available and was not the one walked. |
+| servesGoal | Goal | one_or_more | Yes | The stable goal this option is a means for. Several options may serve one goal. |
+
+### OptionAssessment
+
+*INFERRED reading of one option's friction and feasibility. identityFriction, delayBurden, detectionExposure, and resourceCost are controlled levels (low, moderate, high, not_in_source), not utilities and not traj:transitionProbability. feasibility is feasible or removed. Must carry prov:wasGeneratedBy. A removed option is the result of a means:Constraint. Friction leaves the option on the menu. See Cornish 1994, https://popcenter.asu.edu/sites/default/files/library/crimeprevention/volume_03/06_cornish.pdf.*
+
+**Parents:** UcoObject | **IRI:** `http://example.org/ontology/means/OptionAssessment`
+
+| Property | Type | Cardinality | Required | Description |
+|----------|------|-------------|----------|-------------|
+| createdBy | IdentityAbstraction | zero_or_one | No | The identity that created a characterization of a concept. |
+| description | string | zero_or_more | No | A description of a particular concept characterization. |
+| externalReference | ExternalReference | zero_or_more | No | Specifies a reference to a resource outside of the UCO. |
+| hasFacet | Facet | zero_or_more | No | Further sets of properties characterizing a concept based on the particular context of the class and of the particula... |
+| modifiedTime | dateTime | zero_or_more | No | Specifies the time that this particular version of the object was modified. The object creator can use the time it de... |
+| name | string | zero_or_one | No | The name of a particular concept characterization. |
+| objectCreatedTime | dateTime | zero_or_one | No | The time at which a characterization of a concept is created. This time pertains to the time of creating the record o... |
+| objectMarking | MarkingDefinitionAbstraction | zero_or_more | No | Marking definitions to be applied to a particular concept characterization in its entirety. |
+| objectStatus | string | zero_or_one | No | The current state of formality and acceptance for a UCO object. |
+| specVersion | string | zero_or_one | No | The version of UCO ontology or subontology specification used to characterize a concept. |
+| tag | string | zero_or_more | No | A generic tag/label. |
+| assessesOption | Option | exactly_one | Yes | The option this inferred assessment describes. |
+| delayBurden | string | exactly_one | Yes | How much delay the option imposes, as an analyst level: low, moderate, high, or not_in_source. |
+| detectionExposure | string | exactly_one | Yes | How exposed the option is to detection, as an analyst level: low, moderate, high, or not_in_source. |
+| feasibility | string | exactly_one | Yes | Whether the option is still on the menu: feasible, or removed by a means:Constraint. Feasible options may still carry... |
+| identityFriction | string | exactly_one | Yes | How much identifying trace the option imposes, as an analyst level: low, moderate, high, or not_in_source. Not a meas... |
+| resourceCost | string | exactly_one | Yes | What the option costs the actor in money, labor, or co-actors, as an analyst level: low, moderate, high, or not_in_so... |
+
+### Selection
+
+*INFERRED record that one option was treated as chosen from a menu of at least two. selectionRule is not_modeled, satisficing, discrete_choice, or opportunistic. not_modeled is conformant and is the value to use when the graph must not claim a Bellman policy or a utility. No reward property is defined. Must carry prov:wasGeneratedBy. See Cornish 1994, https://popcenter.asu.edu/sites/default/files/library/crimeprevention/volume_03/06_cornish.pdf.*
+
+**Parents:** UcoObject | **IRI:** `http://example.org/ontology/means/Selection`
+
+| Property | Type | Cardinality | Required | Description |
+|----------|------|-------------|----------|-------------|
+| createdBy | IdentityAbstraction | zero_or_one | No | The identity that created a characterization of a concept. |
+| description | string | zero_or_more | No | A description of a particular concept characterization. |
+| externalReference | ExternalReference | zero_or_more | No | Specifies a reference to a resource outside of the UCO. |
+| hasFacet | Facet | zero_or_more | No | Further sets of properties characterizing a concept based on the particular context of the class and of the particula... |
+| modifiedTime | dateTime | zero_or_more | No | Specifies the time that this particular version of the object was modified. The object creator can use the time it de... |
+| name | string | zero_or_one | No | The name of a particular concept characterization. |
+| objectCreatedTime | dateTime | zero_or_one | No | The time at which a characterization of a concept is created. This time pertains to the time of creating the record o... |
+| objectMarking | MarkingDefinitionAbstraction | zero_or_more | No | Marking definitions to be applied to a particular concept characterization in its entirety. |
+| objectStatus | string | zero_or_one | No | The current state of formality and acceptance for a UCO object. |
+| specVersion | string | zero_or_one | No | The version of UCO ontology or subontology specification used to characterize a concept. |
+| tag | string | zero_or_more | No | A generic tag/label. |
+| amongOptions | Option | one_or_more | Yes | One member of the menu. A selection names at least two, including the chosen option. |
+| selectionRule | string | exactly_one | Yes | How the choice is being interpreted: not_modeled, satisficing, discrete_choice, or opportunistic. not_modeled records... |
+| selectsOption | Option | exactly_one | Yes | The option this selection treats as chosen. It must also appear as means:amongOptions. |
 
 ## ext.rico.rico
 

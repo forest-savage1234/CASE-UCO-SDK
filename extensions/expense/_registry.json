@@ -1,0 +1,112 @@
+{
+  "extension": "expense",
+  "modules": [
+    "expense"
+  ],
+  "classes": {
+    "BenefitAnatomy": {
+      "iri": "http://example.org/ontology/expense/BenefitAnatomy",
+      "module": "expense",
+      "description": "Inferred anatomy of one transition. benefitSource is derived from facts.",
+      "parents": [
+        "UcoObject"
+      ],
+      "is_facet": false,
+      "properties": [
+        {
+          "name": "onTransition",
+          "type": "Transition",
+          "required": true
+        },
+        {
+          "name": "suppliedByPerson",
+          "type": "boolean",
+          "required": true
+        },
+        {
+          "name": "personRetainsValue",
+          "type": "boolean",
+          "required": true
+        },
+        {
+          "name": "requiresPresence",
+          "type": "boolean",
+          "required": true
+        },
+        {
+          "name": "preexisting",
+          "type": "boolean",
+          "required": true
+        },
+        {
+          "name": "valueSurvivesVictim",
+          "type": "boolean",
+          "required": true
+        },
+        {
+          "name": "advantageDefect",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "benefitSource",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "transferredObject",
+          "type": "string",
+          "required": false
+        }
+      ],
+      "source": "expense"
+    },
+    "ExploitationAssessment": {
+      "iri": "http://example.org/ontology/expense/ExploitationAssessment",
+      "module": "expense",
+      "description": "Inferred benefit-at-expense test over one trajectory. Disjoint from PhaseAssertion.",
+      "parents": [
+        "UcoObject"
+      ],
+      "is_facet": false,
+      "properties": [
+        {
+          "name": "assessesTrajectory",
+          "type": "Trajectory",
+          "required": true
+        },
+        {
+          "name": "hasBenefitAnatomy",
+          "type": "BenefitAnatomy",
+          "required": true
+        },
+        {
+          "name": "extractionTestStatus",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "passesExploitationTest",
+          "type": "boolean",
+          "required": true
+        },
+        {
+          "name": "passesExtractionTest",
+          "type": "boolean",
+          "required": true
+        },
+        {
+          "name": "goalRealizingTransition",
+          "type": "Transition",
+          "required": false
+        },
+        {
+          "name": "exploitationOnset",
+          "type": "Interval",
+          "required": false
+        }
+      ],
+      "source": "expense"
+    }
+  }
+}

@@ -1,0 +1,237 @@
+# Layered Exploitation State Machine — composition metamodel (T-Box)
+#
+# Domain-agnostic composition layer over traj:Trajectories. A case-level
+# ExploitationStateMachine aggregates one or more Layers (each occupying one
+# Trajectory, optionally backed by a per-layer StateMachineModel), Couplings
+# between layers (sequential hand-offs, leverage, shared factors, temporal
+# overlap), and shared Factors (actors, instruments, locations, evidence).
+#
+# Does NOT flatten multiple domain alphabets into one mega-S. Domain phase /
+# technique catalogs live in sibling extensions (forced-labor, trafficking,
+# elder-fraud, …) or in layered-vocab.ttl for the CSEA/transit/CST alphabet
+# used by the Atkinson exemplar.
+#
+# Complements traj: (occupancy + per-machine models). Complements UCO
+# Relationship (Coupling may optionally cite a Relationship via realizedBy).
+#
+# Citation motivation: multi-thread offense composition and temporal process
+# modeling — see NIST SP 800-61r2 incident lifecycle practice
+# (https://csrc.nist.gov/publications/detail/sp/800-61/rev-2/final) and
+# W3C OWL-Time interval relations (https://www.w3.org/TR/owl-time/).
+
+@prefix lay: <http://example.org/ontology/layered/> .
+@prefix traj: <http://example.org/ontology/trajectories/> .
+@prefix uco-core: <https://ontology.unifiedcyberontology.org/uco/core/> .
+@prefix time: <http://www.w3.org/2006/time#> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+<http://example.org/ontology/layered>
+	a owl:Ontology ;
+	rdfs:label "Layered Exploitation State Machine Composition"@en ;
+	rdfs:comment "Composition metamodel for Exploitation State Machines (ESMs): case-level lay:ExploitationStateMachine aggregates lay:Layer slots (each bound to a traj:Trajectory), lay:Coupling edges (sequential enables, leverage, shared factors, temporal overlap), and shared lay:hasFactor nodes — without flattening domain alphabets into one state set. Domain-agnostic; domain phase/technique catalogs plug in as traj:State / uco-action:Technique vocabularies. See https://www.w3.org/TR/owl-time/ and NIST SP 800-61r2 (https://csrc.nist.gov/publications/detail/sp/800-61/rev-2/final)."@en ;
+	dcterms:source
+		"https://www.w3.org/TR/owl-time/"^^xsd:anyURI ,
+		"https://csrc.nist.gov/publications/detail/sp/800-61/rev-2/final"^^xsd:anyURI ,
+		"https://www.spokesman.com/stories/2025/apr/13/tri-cities-business-owner-accused-of-grooming-sex-/"^^xsd:anyURI ;
+	owl:imports
+		<http://example.org/ontology/trajectories> ,
+		<https://ontology.unifiedcyberontology.org/uco/core/> .
+
+#################################################################
+# Classes
+#################################################################
+
+lay:ExploitationStateMachine
+	a owl:Class ;
+	rdfs:subClassOf uco-core:UcoObject ;
+	owl:disjointWith lay:Layer , lay:Coupling ;
+	rdfs:label "Exploitation State Machine"@en ;
+	rdfs:comment "Case-level (or subject-level) composition of one or more traj:Trajectory machines into a layered Exploitation State Machine (ESM). Each participating machine remains its own alphabet (S/A) via a lay:Layer; cross-machine coupling is expressed with lay:Coupling, never by merging States into one mega-S. Supports full or partial case coverage, single or multiple trajectories, and sequential / concurrent / parallel / hybrid composition patterns. Domain-agnostic — offense, legal-process, or investigation machines may all participate. Motivated by multi-thread digital-forensic and cyber-investigation composition needs; see NIST SP 800-61r2 for phase-oriented incident practice (https://csrc.nist.gov/publications/detail/sp/800-61/rev-2/final)."@en .
+
+lay:Layer
+	a owl:Class ;
+	rdfs:subClassOf uco-core:UcoObject ;
+	owl:disjointWith lay:ExploitationStateMachine , lay:Coupling ;
+	rdfs:label "Layer"@en ;
+	rdfs:comment "One machine slot inside a lay:ExploitationStateMachine. Binds exactly one traj:Trajectory (observed occupancy history) and optionally one traj:StateMachineModel (per-layer inferred alphabet model). Carries coverage (full vs partial run of the modeled alphabet), an ordering index for sequential chains, and an optional concurrency group for parallel/concurrent tracks. Domain-agnostic; optional lay:domainAlphabet points at a SKOS scheme or other vocabulary identifying the phase alphabet."@en .
+
+lay:Coupling
+	a owl:Class ;
+	rdfs:subClassOf uco-core:UcoObject ;
+	owl:disjointWith lay:ExploitationStateMachine , lay:Layer ;
+	rdfs:label "Coupling"@en ;
+	rdfs:comment "First-class inter-layer (or endpoint-to-endpoint) coupling inside a lay:ExploitationStateMachine. Expresses sequential hand-offs (enables), leverage reuse (providesLeverageFor), production of occupancy (produces), shared-factor links (sharesFactor), and explicit temporal overlap for concurrent/parallel tracks (temporallyOverlaps). Optionally cites a uco-core:Relationship via lay:realizedBy for SPARQL/interop with open-vocab relationship graphs. Prefer Coupling over bare Relationship alone when the edge participates in ESM composition semantics. Temporal overlap semantics align with W3C OWL-Time interval relations (https://www.w3.org/TR/owl-time/#interval-relations)."@en .
+
+#################################################################
+# Object properties — ESM
+#################################################################
+
+lay:hasLayer
+	a owl:ObjectProperty ;
+	rdfs:domain lay:ExploitationStateMachine ;
+	rdfs:range lay:Layer ;
+	rdfs:label "has layer"@en ;
+	rdfs:comment "Links an Exploitation State Machine to one of its Layer slots. An ESM MUST have at least one Layer."@en .
+
+lay:hasCoupling
+	a owl:ObjectProperty ;
+	rdfs:domain lay:ExploitationStateMachine ;
+	rdfs:range lay:Coupling ;
+	rdfs:label "has coupling"@en ;
+	rdfs:comment "Links an Exploitation State Machine to a Coupling edge that connects its layers or their endpoints."@en .
+
+lay:hasFactor
+	a owl:ObjectProperty ;
+	rdfs:domain lay:ExploitationStateMachine ;
+	rdfs:range uco-core:UcoObject ;
+	rdfs:label "has factor"@en ;
+	rdfs:comment "Registers a shared case factor participating in the ESM — typically an actor (Person/Organization), instrument/affordance, location, evidence node, or other UcoObject referenced across layers. Factors are not States; they are the ontology elements the trajectories act through. A stable goal is not a factor; use lay:hasGoal."@en .
+
+lay:hasGoal
+	a owl:ObjectProperty ;
+	rdfs:domain lay:ExploitationStateMachine ;
+	rdfs:range uco-core:UcoObject ;
+	rdfs:label "has goal"@en ;
+	rdfs:comment "Stable goal of the composed machine. When the means extension is loaded the value should be a means:Goal. This ontology does not OWL-import means: means depends on layered, and the import would cycle. The range stays uco-core:UcoObject so a legal-process machine can omit the property. See https://github.com/vulnmaster/CASE-UCO-SDK/blob/main/docs/recipes/candidates/layered-esm-composition.md."@en .
+
+lay:hasExpenseAssessment
+	a owl:ObjectProperty ;
+	rdfs:domain lay:ExploitationStateMachine ;
+	rdfs:range uco-core:UcoObject ;
+	rdfs:label "has expense assessment"@en ;
+	rdfs:comment "Optional benefit-at-expense assessment. When the expense extension is loaded the value should be an expense:ExploitationAssessment. Omit the property when the machine is a warrant return, a business process, a legal-process machine, or any other path that does not run the test. This ontology does not OWL-import expense. See https://github.com/vulnmaster/CASE-UCO-SDK/blob/main/docs/recipes/candidates/layered-esm-composition.md."@en .
+
+lay:hasAggregateModel
+	a owl:ObjectProperty ;
+	rdfs:domain lay:ExploitationStateMachine ;
+	rdfs:range traj:StateMachineModel ;
+	rdfs:label "has aggregate model"@en ;
+	rdfs:comment "Optional traj:StateMachineModel that learnedFrom the union of layer trajectories for cross-layer analytics. MUST NOT invent a flattened mega-S as initialState when layers use distinct alphabets — omit initialState on the aggregate when no single s0 exists."@en .
+
+lay:concernsSubject
+	a owl:ObjectProperty ;
+	rdfs:domain lay:ExploitationStateMachine ;
+	rdfs:range uco-core:UcoObject ;
+	rdfs:label "concerns subject"@en ;
+	rdfs:comment "Primary subject (typically the alleged offender or focal entity) whose multi-thread conduct the ESM composes."@en .
+
+#################################################################
+# Object properties — Layer
+#################################################################
+
+lay:occupiesTrajectory
+	a owl:ObjectProperty ;
+	rdfs:domain lay:Layer ;
+	rdfs:range traj:Trajectory ;
+	rdfs:label "occupies trajectory"@en ;
+	rdfs:comment "The traj:Trajectory whose observed phase occupancy this Layer carries. Exactly one per Layer."@en .
+
+lay:hasMachineModel
+	a owl:ObjectProperty ;
+	rdfs:domain lay:Layer ;
+	rdfs:range traj:StateMachineModel ;
+	rdfs:label "has machine model"@en ;
+	rdfs:comment "Optional per-layer traj:StateMachineModel (inferred alphabet / transition estimates for this Layer's machine only)."@en .
+
+lay:domainAlphabet
+	a owl:ObjectProperty ;
+	rdfs:domain lay:Layer ;
+	rdfs:range skos:ConceptScheme ;
+	rdfs:label "domain alphabet"@en ;
+	rdfs:comment "Optional SKOS ConceptScheme identifying the phase vocabulary (S) this Layer uses — e.g. a forced-labor or grooming phase scheme. Domain-specific layers assert this; domain-agnostic process layers may omit it or point at a local scheme."@en .
+
+#################################################################
+# Object properties — Coupling
+#################################################################
+
+lay:fromLayer
+	a owl:ObjectProperty ;
+	rdfs:domain lay:Coupling ;
+	rdfs:range lay:Layer ;
+	rdfs:label "from layer"@en ;
+	rdfs:comment "Source Layer of a directed Coupling."@en .
+
+lay:toLayer
+	a owl:ObjectProperty ;
+	rdfs:domain lay:Coupling ;
+	rdfs:range lay:Layer ;
+	rdfs:label "to layer"@en ;
+	rdfs:comment "Target Layer of a directed Coupling."@en .
+
+lay:fromEndpoint
+	a owl:ObjectProperty ;
+	rdfs:domain lay:Coupling ;
+	rdfs:range uco-core:UcoObject ;
+	rdfs:label "from endpoint"@en ;
+	rdfs:comment "Fine-grained source endpoint — typically a traj:PhaseAssertion, uco-action:Action, traj:State, or factor UcoObject — within or associated with fromLayer."@en .
+
+lay:toEndpoint
+	a owl:ObjectProperty ;
+	rdfs:domain lay:Coupling ;
+	rdfs:range uco-core:UcoObject ;
+	rdfs:label "to endpoint"@en ;
+	rdfs:comment "Fine-grained target endpoint — typically a traj:PhaseAssertion, uco-action:Action, traj:State, or factor UcoObject — within or associated with toLayer."@en .
+
+lay:realizedBy
+	a owl:ObjectProperty ;
+	rdfs:domain lay:Coupling ;
+	rdfs:range uco-core:Relationship ;
+	rdfs:label "realized by"@en ;
+	rdfs:comment "Optional uco-core:Relationship that materializes the same edge in open-vocab Relationship form (e.g. kindOfRelationship 'enables'). Use when dual representation aids interop; Coupling remains the ESM-composition authority."@en .
+
+lay:couplingInterval
+	a owl:ObjectProperty ;
+	rdfs:domain lay:Coupling ;
+	rdfs:range time:ProperInterval ;
+	rdfs:label "coupling interval"@en ;
+	rdfs:comment "Optional owl-time ProperInterval for Couplings that assert temporal overlap (couplingKind temporallyOverlaps) or a bounded hand-off window. See https://www.w3.org/TR/owl-time/#time:ProperInterval."@en .
+
+#################################################################
+# Datatype properties
+#################################################################
+
+lay:compositionPattern
+	a owl:DatatypeProperty ;
+	rdfs:domain lay:ExploitationStateMachine ;
+	rdfs:range xsd:string ;
+	rdfs:label "composition pattern"@en ;
+	rdfs:comment "Overall composition pattern of the ESM. Controlled vocabulary (SHACL sh:in): 'sequential' (layers ordered by enables hand-offs only), 'concurrent' (layers overlap in time with temporallyOverlaps and no enables between them), 'parallel' (independent tracks in the same concurrency group with neither enables nor required overlap assertion), 'hybrid' (mix of sequential hand-offs and concurrent/parallel tracks — typical multi-offense cases)."@en .
+
+lay:completeness
+	a owl:DatatypeProperty ;
+	rdfs:domain lay:ExploitationStateMachine ;
+	rdfs:range xsd:string ;
+	rdfs:label "completeness"@en ;
+	rdfs:comment "Whether the ESM claims to model all known offense/process threads for the subject ('full') or only a sourced subset ('partial'). Parallel Actions that are deliberately NOT Layers (e.g. post-arrest obstruction outside the offense ESM) imply completeness 'partial' or must be documented as out-of-scope in the ESM description — they do not automatically become Layers."@en .
+
+lay:layerIndex
+	a owl:DatatypeProperty ;
+	rdfs:domain lay:Layer ;
+	rdfs:range xsd:nonNegativeInteger ;
+	rdfs:label "layer index"@en ;
+	rdfs:comment "Zero- or one-based order of this Layer within sequential composition (hand-off chains). Concurrent/parallel Layers may share an index band or rely on concurrencyGroup instead; use consistently within one ESM."@en .
+
+lay:coverage
+	a owl:DatatypeProperty ;
+	rdfs:domain lay:Layer ;
+	rdfs:range xsd:string ;
+	rdfs:label "coverage"@en ;
+	rdfs:comment "Whether this Layer's Trajectory runs the full modeled alphabet endpoint ('full') or only a partial/mid-chain occupancy ('partial') — e.g. forced-labor ending at ForcedLabor without WageAppropriation is 'partial' relative to that alphabet. Distinct from traj:terminalPolarity (completed vs disrupted outcome)."@en .
+
+lay:concurrencyGroup
+	a owl:DatatypeProperty ;
+	rdfs:domain lay:Layer ;
+	rdfs:range xsd:string ;
+	rdfs:label "concurrency group"@en ;
+	rdfs:comment "Opaque group identifier. Layers sharing the same concurrencyGroup are intended to run concurrent or parallel within the ESM. Pair with lay:Coupling couplingKind 'temporallyOverlaps' when overlap is evidenced; use group membership alone for parallel-independent tracks."@en .
+
+lay:couplingKind
+	a owl:DatatypeProperty ;
+	rdfs:domain lay:Coupling ;
+	rdfs:range xsd:string ;
+	rdfs:label "coupling kind"@en ;
+	rdfs:comment "Controlled vocabulary (SHACL sh:in) for Coupling semantics: 'enables' (sequential hand-off — source occupancy/action enables target), 'providesLeverageFor' (prior product/instrument reused as coercion/leverage), 'produces' (action produces a phase occupancy, often into a Layer s0), 'sharesFactor' (layers share an actor/instrument/location factor), 'temporallyOverlaps' (explicit concurrent temporal overlap; prefer over implying concurrency by missing edges alone), 'feeds' (general sequential feed weaker than enables)."@en .

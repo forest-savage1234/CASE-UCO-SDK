@@ -44,7 +44,7 @@ from critic.canonical import (
 )
 from critic.finding_diff import make_stable_finding_id
 from critic.models import CriticFinding, CriticTarget
-from document_semantic_mapping import _try_reconstruct_base58
+from document_semantic_mapping import _NON_PERSON_NAME_TOKENS, _try_reconstruct_base58
 
 RULE_VERSION = "1.4.0"
 
@@ -218,32 +218,6 @@ def _finding(
     )
 
 
-_NON_PERSON_NAME_TOKENS = frozenset(
-    {
-        "goods",
-        "sold",
-        "nuclear",
-        "physics",
-        "cape",
-        "town",
-        "department",
-        "university",
-        "college",
-        "institute",
-        "school",
-        "monte",
-        "carlo",
-        "revenue",
-        "fiscal",
-        "method",
-        "simulation",
-        "cost",
-        "shares",
-        "outstanding",
-        "boson",
-        "higgs",
-    }
-)
 _NANP_DIGIT_RE = re.compile(r"\d")
 
 

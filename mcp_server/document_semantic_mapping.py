@@ -191,16 +191,15 @@ def _institutional_of_phrase(full_text: str, start: int) -> bool:
 
 
 def _bold_person_confidence(full_text: str, start: int, end: int) -> float:
-    """Bold title case is a person only when a nearby cue says so.
+    """Bold title case followed by a method or artifact noun is not a person.
 
-    ``**Monte Carlo** method`` is a method name. ``**Dylan Reyes** (DOB ...)``
-    is a person. Without a cue the span stays below the assertion threshold.
+    ``**Monte Carlo** simulation`` names a method; the span stays below the
+    assertion threshold. ``**John Smith**, 34, of Springfield`` is a person.
     """
 
-    window = full_text[max(0, start - 80) : min(len(full_text), end + 40)]
-    if _PERSON_CUE_RE.search(window):
-        return 0.9
-    return 0.35
+    if _BOLD_NON_PERSON_HEAD_RE.match(full_text, end):
+        return 0.35
+    return 0.9
 
 
 def _is_plausible_nanp_phone(value: str) -> bool:
@@ -508,8 +507,10 @@ _INSTITUTIONAL_OF_RE = re.compile(
     r"(?:Department|University|College|School|Institute|Cost|City|Ministry|Office)\s+of\s+$",
     re.IGNORECASE,
 )
-_PERSON_CUE_RE = re.compile(
-    r"\b(?:defendant|victim|officer|agent|aka|dob|year-old|charged|resident|witness|suspect|arrestee)\b",
+_BOLD_NON_PERSON_HEAD_RE = re.compile(
+    r"\**[ \t]*(?:simulations?|methods?|models?|algorithms?|analysis|analyses|"
+    r"approach|techniques?|estimators?|integration|sampling|equations?|"
+    r"theorem|distributions?|transforms?|process|framework|protocol)\b",
     re.IGNORECASE,
 )
 # Spans below this confidence stay in extracted text and are not asserted.

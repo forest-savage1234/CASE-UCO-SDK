@@ -33,7 +33,7 @@ evaluated graphs.
 evaluation/critic/
   schema/           # manifest, oracle, and report JSON Schemas
   cases/            # per-case graph/serializer + manifest.json + oracle.json
-  responses/mock/   # bound two-pass manual replay payloads (empty findings)
+  responses/mock/   # bound two-pass manual replay payloads (no findings, one assessed scorecard dimension)
   harness/          # offline runners (no LLM)
   reports/          # generated JSON reports (gitignored output)
 ```

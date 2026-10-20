@@ -1,0 +1,28 @@
+# Expected-INVALID fixture for layered composition SHACL.
+# Must FAIL: ESM missing hasLayer / compositionPattern / completeness;
+# Layer missing occupiesTrajectory; Coupling missing couplingKind;
+# temporallyOverlaps without couplingInterval.
+
+@prefix lay: <http://example.org/ontology/layered/> .
+@prefix traj: <http://example.org/ontology/trajectories/> .
+@prefix uco-core: <https://ontology.unifiedcyberontology.org/uco/core/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+lay:bad-esm
+	a lay:ExploitationStateMachine ;
+	uco-core:name "Invalid ESM — missing required composition properties and layers" .
+
+lay:bad-layer
+	a lay:Layer ;
+	uco-core:name "Invalid Layer — missing occupiesTrajectory / coverage / layerIndex" .
+
+lay:bad-coupling
+	a lay:Coupling ;
+	uco-core:name "Invalid Coupling — missing couplingKind and endpoints" .
+
+lay:bad-overlap
+	a lay:Coupling ;
+	uco-core:name "Invalid temporallyOverlaps — missing couplingInterval" ;
+	lay:couplingKind "temporallyOverlaps" ;
+	lay:fromLayer lay:bad-layer ;
+	lay:toLayer lay:bad-layer .

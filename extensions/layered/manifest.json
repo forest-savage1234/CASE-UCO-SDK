@@ -1,0 +1,38 @@
+{
+  "name": "layered",
+  "display_name": "Layered Exploitation State Machine Composition",
+  "version": "0.2.0",
+  "status": "candidate",
+  "upstream_repo": "https://github.com/vulnmaster/CASE-UCO-SDK",
+  "upstream_ref": "main",
+  "license": "Apache-2.0",
+  "namespaces": {
+    "lay": "http://example.org/ontology/layered/"
+  },
+  "owl_files": [
+    "layered.ttl",
+    "layered-vocab.ttl"
+  ],
+  "shacl_files": [
+    "layered-shapes.ttl"
+  ],
+  "bridge_files": [],
+  "depends_on": ["trajectories"],
+  "exemplar_files": [
+    "layered-exemplar.ttl",
+    "layered-legal-process.ttl"
+  ],
+  "invalid_exemplar_files": [
+    "layered-invalid-exemplar.ttl"
+  ],
+  "uco_compat": ["1.4.0", "1.5.0"],
+  "upper_ontology": "none",
+  "cdo_shapes_compatibility": {
+    "CDO-Shapes-gufo": "compatible",
+    "CDO-Shapes-BFO": "compatible",
+    "CDO-Shapes-PROV-O": "compatible",
+    "CDO-Shapes-Time": "compatible",
+    "CDO-Shapes-GeoSPARQL": "compatible",
+    "CDO-Shapes-FOAF": "compatible"
+  }
+}

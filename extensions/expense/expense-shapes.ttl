@@ -1,0 +1,276 @@
+# Expense extension — SHACL
+# Rejects a hand-set benefitSource that contradicts anatomy facts.
+# Rejects realized_at_expense when the conjunction fails, including a
+# minor name that is not the source of the gain.
+
+@prefix expense: <http://example.org/ontology/expense/> .
+@prefix traj: <http://example.org/ontology/trajectories/> .
+@prefix uco-core: <https://ontology.unifiedcyberontology.org/uco/core/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+expense:BenefitAnatomy-shape
+	a sh:NodeShape ;
+	sh:targetClass expense:BenefitAnatomy ;
+	sh:message "expense:BenefitAnatomy is an INFERRED benefit anatomy. benefitSource must be the string the facts derive."@en ;
+	sh:property
+		[
+			sh:path prov:wasGeneratedBy ;
+			sh:minCount 1 ;
+			sh:nodeKind sh:IRI ;
+		] ;
+	sh:property
+		[
+			sh:path expense:onTransition ;
+			sh:class traj:Transition ;
+			sh:minCount 1 ;
+			sh:maxCount 1 ;
+			sh:nodeKind sh:IRI ;
+		] ;
+	sh:property
+		[
+			sh:path expense:transferredObject ;
+			sh:datatype xsd:string ;
+			sh:maxCount 1 ;
+		] ;
+	sh:property
+		[
+			sh:path expense:preexisting ;
+			sh:datatype xsd:boolean ;
+			sh:minCount 1 ;
+			sh:maxCount 1 ;
+		] ;
+	sh:property
+		[
+			sh:path expense:valueSurvivesVictim ;
+			sh:datatype xsd:boolean ;
+			sh:minCount 1 ;
+			sh:maxCount 1 ;
+		] ;
+	sh:property
+		[
+			sh:path expense:anatomyRule ;
+			sh:datatype xsd:string ;
+			sh:minCount 1 ;
+			sh:maxCount 1 ;
+		] ;
+	sh:property
+		[
+			sh:path expense:suppliedByPerson ;
+			sh:datatype xsd:boolean ;
+			sh:minCount 1 ;
+			sh:maxCount 1 ;
+		] ;
+	sh:property
+		[
+			sh:path expense:personRetainsValue ;
+			sh:datatype xsd:boolean ;
+			sh:minCount 1 ;
+			sh:maxCount 1 ;
+		] ;
+	sh:property
+		[
+			sh:path expense:requiresPresence ;
+			sh:datatype xsd:boolean ;
+			sh:minCount 1 ;
+			sh:maxCount 1 ;
+		] ;
+	sh:property
+		[
+			sh:path expense:advantageDefect ;
+			sh:datatype xsd:string ;
+			sh:minCount 1 ;
+			sh:maxCount 1 ;
+			sh:in ( "deception" "coercion" "vulnerability" "none_alleged" "not_in_instrument" ) ;
+		] ;
+	sh:property
+		[
+			sh:path expense:benefitSource ;
+			sh:datatype xsd:string ;
+			sh:minCount 1 ;
+			sh:maxCount 1 ;
+			sh:in ( "not_from_person" "retained" "victim_sourced" "person_activity" "person_used" "victim_targeted" "none" ) ;
+		] ;
+	sh:sparql
+		[
+			a sh:SPARQLConstraint ;
+			sh:message "benefitSource does not match the anatomy derivation."@en ;
+			sh:select """
+				SELECT $this ?source
+				WHERE {
+					$this expense:benefitSource ?source .
+					$this expense:suppliedByPerson ?supplied .
+					$this expense:personRetainsValue ?retains .
+					$this expense:requiresPresence ?presence .
+					$this expense:preexisting ?pre .
+					$this expense:valueSurvivesVictim ?survives .
+					BIND(EXISTS { $this expense:transferredObject ?obj } AS ?hasObj)
+					BIND(IF(!?supplied, "not_from_person",
+						IF(?retains, "retained",
+						IF(?hasObj && ?pre && ?survives && !?presence, "victim_sourced",
+						IF(!?hasObj && !?survives && ?presence, "person_activity",
+						IF(!?survives && !?presence, "victim_targeted",
+						IF(?presence || (?hasObj && !?pre), "person_used",
+						"none")))))) AS ?expected)
+					FILTER(?source != ?expected)
+				}
+				""" ;
+		] ;
+	sh:not
+		[
+			sh:class traj:PhaseAssertion ;
+			sh:message "BenefitAnatomy must not be typed traj:PhaseAssertion."@en ;
+		] .
+
+expense:ExploitationAssessment-shape
+	a sh:NodeShape ;
+	sh:targetClass expense:ExploitationAssessment ;
+	sh:message "expense:ExploitationAssessment is an INFERRED benefit-at-expense test over one trajectory."@en ;
+	sh:property
+		[
+			sh:path prov:wasGeneratedBy ;
+			sh:minCount 1 ;
+			sh:nodeKind sh:IRI ;
+		] ;
+	sh:property
+		[
+			sh:path expense:assessesTrajectory ;
+			sh:class traj:Trajectory ;
+			sh:minCount 1 ;
+			sh:maxCount 1 ;
+			sh:nodeKind sh:IRI ;
+		] ;
+	sh:property
+		[
+			sh:path expense:goalRealizingTransition ;
+			sh:class traj:Transition ;
+			sh:maxCount 1 ;
+			sh:nodeKind sh:IRI ;
+		] ;
+	sh:property
+		[
+			sh:path expense:hasBenefitAnatomy ;
+			sh:class expense:BenefitAnatomy ;
+			sh:minCount 1 ;
+			sh:nodeKind sh:IRI ;
+		] ;
+	sh:property
+		[
+			sh:path expense:extractionTestStatus ;
+			sh:datatype xsd:string ;
+			sh:minCount 1 ;
+			sh:maxCount 1 ;
+			sh:in ( "realized_at_expense" "not_exploitation" "not_realized" "withheld_partial" ) ;
+		] ;
+	sh:property
+		[
+			sh:path expense:passesExtractionTest ;
+			sh:datatype xsd:boolean ;
+			sh:minCount 1 ;
+			sh:maxCount 1 ;
+		] ;
+	sh:property
+		[
+			sh:path expense:passesExploitationTest ;
+			sh:datatype xsd:boolean ;
+			sh:minCount 1 ;
+			sh:maxCount 1 ;
+		] ;
+	sh:sparql
+		[
+			a sh:SPARQLConstraint ;
+			sh:message "passesExploitationTest is true only for realized_at_expense. passesExtractionTest is true only when that goal edge is victim_sourced. A goal transition is required for realized_at_expense and not_exploitation, and forbidden otherwise."@en ;
+			sh:select """
+				SELECT $this
+				WHERE {
+					$this expense:passesExploitationTest ?exploit .
+					$this expense:passesExtractionTest ?extract .
+					$this expense:extractionTestStatus ?status .
+					BIND(?status = "realized_at_expense" AS ?expectExploit)
+					BIND(
+						?status = "realized_at_expense" && EXISTS {
+							$this expense:goalRealizingTransition ?gS .
+							$this expense:hasBenefitAnatomy ?aS .
+							?aS expense:onTransition ?gS .
+							?aS expense:benefitSource "victim_sourced" .
+						}
+					AS ?expectExtract)
+					FILTER(
+						?exploit != ?expectExploit
+						|| ?extract != ?expectExtract
+						|| (?status IN ("realized_at_expense", "not_exploitation") && NOT EXISTS { $this expense:goalRealizingTransition ?g })
+						|| (?status IN ("not_realized", "withheld_partial") && EXISTS { $this expense:goalRealizingTransition ?g2 })
+					)
+				}
+				""" ;
+		] ;
+	sh:sparql
+		[
+			a sh:SPARQLConstraint ;
+			sh:message "realized_at_expense requires a goal edge whose derived source is victim_sourced, person_activity, or person_used and whose advantageDefect is deception, coercion, or vulnerability."@en ;
+			sh:select """
+				SELECT $this
+				WHERE {
+					$this expense:extractionTestStatus "realized_at_expense" .
+					FILTER NOT EXISTS {
+						$this expense:goalRealizingTransition ?g .
+						$this expense:hasBenefitAnatomy ?a .
+						?a expense:onTransition ?g .
+						?a expense:benefitSource ?source .
+						?a expense:advantageDefect ?defect .
+						FILTER(?source IN ("victim_sourced", "person_activity", "person_used"))
+						FILTER(?defect IN ("deception", "coercion", "vulnerability"))
+					}
+				}
+				""" ;
+		] ;
+	sh:sparql
+		[
+			a sh:SPARQLConstraint ;
+			sh:message "not_exploitation cannot be used when the goal edge meets the benefit-at-expense test."@en ;
+			sh:select """
+				SELECT $this
+				WHERE {
+					$this expense:extractionTestStatus "not_exploitation" .
+					FILTER EXISTS {
+						$this expense:goalRealizingTransition ?g .
+						$this expense:hasBenefitAnatomy ?a .
+						?a expense:onTransition ?g .
+						?a expense:benefitSource ?source .
+						?a expense:advantageDefect ?defect .
+						FILTER(?source IN ("victim_sourced", "person_activity", "person_used"))
+						FILTER(?defect IN ("deception", "coercion", "vulnerability"))
+					}
+				}
+				""" ;
+		] ;
+	sh:sparql
+		[
+			a sh:SPARQLConstraint ;
+			sh:message "exploitationOnset is the arriving phase interval of the goal edge, and only when passesExploitationTest is true."@en ;
+			sh:select """
+				SELECT $this
+				WHERE {
+					$this expense:passesExploitationTest ?exploit .
+					FILTER(
+						(?exploit = true && NOT EXISTS {
+							$this expense:exploitationOnset ?interval .
+							$this expense:goalRealizingTransition ?g .
+							$this expense:assessesTrajectory ?traj .
+							?g traj:toState ?state .
+							?traj traj:hasPhaseAssertion ?phase .
+							?phase traj:assertsState ?state .
+							?phase traj:atInterval ?interval .
+						})
+						|| (?exploit = false && EXISTS { $this expense:exploitationOnset ?wrong })
+					)
+				}
+				""" ;
+		] ;
+	sh:not
+		[
+			sh:class traj:PhaseAssertion ;
+			sh:message "ExploitationAssessment must not be typed traj:PhaseAssertion."@en ;
+		] .
+

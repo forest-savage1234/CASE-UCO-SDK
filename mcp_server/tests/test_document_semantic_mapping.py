@@ -10,6 +10,7 @@ from document_semantic_mapping import (
     _B58_ALPHABET,
     _is_plausible_nanp_phone,
     extract_semantic_entities,
+    partition_asserted_entities,
     repair_ocr_cyber_identifiers,
 )
 
@@ -368,6 +369,24 @@ def test_bold_method_name_is_not_a_person() -> None:
     assert not any(
         entity.ontology_class == "uco-identity:Person" for entity in entities
     )
+
+
+def test_bold_name_before_method_noun_is_withheld() -> None:
+    text = "We fit a **Markov Chain** model to the transitions."
+    entities = extract_semantic_entities(text, run_seed="markov-t0")
+    asserted, withheld, _genre = partition_asserted_entities(entities, text)
+    assert not any(e.ontology_class == "uco-identity:Person" for e in asserted)
+    assert [e.label for e in withheld] == ["Markov Chain"]
+
+
+def test_bold_press_release_name_is_asserted() -> None:
+    text = "**John Smith**, 34, of Springfield, was sentenced today to 10 years."
+    entities = extract_semantic_entities(text, run_seed="press-release-t0")
+    asserted, withheld, _genre = partition_asserted_entities(entities, text)
+    assert [e.label for e in asserted if e.ontology_class == "uco-identity:Person"] == [
+        "John Smith"
+    ]
+    assert withheld == []
 
 
 def test_phone_re_keeps_space_dot_hyphen_separators() -> None:

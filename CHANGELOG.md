@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.32.1] - 2026-10-19
+
+The `layered`, `means`, and `expense` extensions ship as candidate packages, the accepted-repair replay passes again, and bold names in press releases are people again.
+
+### Added
+
+- Candidate extensions `layered` 0.2.0, `means` 0.1.0, and `expense` 0.5.0 compose several `trajectories` machines in one case, record the means available for a stable goal, and run an optional benefit-at-expense test. Each valid exemplar conforms under `case_validate --built-version case-1.5.0 --inference rdfs`, and each invalid exemplar fails. Their recipes are in `docs/recipes/candidates/` until the extensions are promoted, and their draft notes are in `esm-draft/proposals/`. The language registries gain the 19 classes the three extensions declare.
+
+### Fixed
+
+- A bold title-case name is a Person again unless a method or artifact noun follows it (`**Markov Chain** model`). In 1.32.0, a bold name without a nearby role word was withheld, so press-release names such as `**John Smith**, 34, of Springfield` did not become Person nodes.
+- The critic replay fixtures in `evaluation/critic/responses/mock/` assess one scorecard dimension. The CI replay that requires `accepted` failed in 1.32.0 because two empty passes now finish as `review_unattested`.
+- `CRIT-H-ENTITY-TYPE-ANCHOR` reads the non-person name tokens from document mapping instead of keeping its own copy.
+- `layered` declares UCO 1.5.0 compatibility.
+- Credit for 1.32.0: the NANP phone gate is from @mrinaalr ([#160](https://github.com/vulnmaster/CASE-UCO-SDK/pull/160)), and nested shape namespaces in the generator are from @chrishargreaves ([#162](https://github.com/vulnmaster/CASE-UCO-SDK/pull/162)).
+
+
+Package versions bumped to **1.32.1**.
+
 ## [1.32.0] - 2026-10-19
 
 Document mapping stops asserting implausible phones and institutional phrases as people, routing abstention returns ranked recipes, and an empty critic shell is not acceptance. SOLVE-IT classes pick up the properties defined by shapes in a nested shapes namespace.
@@ -3216,7 +3235,8 @@ digital forensics, cyber-investigation, and cyber-observable data.
 - GitHub Actions workflows: CI, CodeQL, dependency review, release
 - Dependabot configuration for automated dependency updates
 
-[Unreleased]: https://github.com/vulnmaster/CASE-UCO-SDK/compare/v1.32.0...HEAD
+[Unreleased]: https://github.com/vulnmaster/CASE-UCO-SDK/compare/v1.32.1...HEAD
+[1.32.1]: https://github.com/vulnmaster/CASE-UCO-SDK/compare/v1.32.0...v1.32.1
 [1.32.0]: https://github.com/vulnmaster/CASE-UCO-SDK/compare/v1.31.2...v1.32.0
 [1.31.2]: https://github.com/vulnmaster/CASE-UCO-SDK/compare/v1.31.1...v1.31.2
 [1.31.1]: https://github.com/vulnmaster/CASE-UCO-SDK/compare/v1.31.0...v1.31.1

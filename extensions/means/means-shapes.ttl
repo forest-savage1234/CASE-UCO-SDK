@@ -1,0 +1,232 @@
+# Choice extension — SHACL
+# Observed Option / Goal / OffenderCapability cite evidence.
+# Inferred OptionAssessment and Selection cite a generating activity.
+
+@prefix means: <http://example.org/ontology/means/> .
+@prefix traj: <http://example.org/ontology/trajectories/> .
+@prefix uco-core: <https://ontology.unifiedcyberontology.org/uco/core/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+means:Goal-shape
+	a sh:NodeShape ;
+	sh:targetClass means:Goal ;
+	sh:property
+		[
+			sh:path means:pursuedBy ;
+			sh:minCount 1 ;
+			sh:maxCount 1 ;
+			sh:nodeKind sh:IRI ;
+			sh:message "A Goal MUST name the actor who pursues it."@en ;
+		] .
+
+means:Option-shape
+	a sh:NodeShape ;
+	sh:targetClass means:Option ;
+	sh:message "An Option is an observed means for a goal at a state."@en ;
+	sh:property
+		[
+			sh:path means:servesGoal ;
+			sh:class means:Goal ;
+			sh:minCount 1 ;
+			sh:nodeKind sh:IRI ;
+		] ;
+	sh:property
+		[
+			sh:path means:availableAt ;
+			sh:class traj:State ;
+			sh:minCount 1 ;
+			sh:nodeKind sh:IRI ;
+		] ;
+	sh:property
+		[
+			sh:path means:usesInstrument ;
+			sh:minCount 1 ;
+			sh:maxCount 1 ;
+			sh:nodeKind sh:IRI ;
+		] ;
+	sh:property
+		[
+			sh:path means:enactedTransition ;
+			sh:class traj:Transition ;
+			sh:maxCount 1 ;
+			sh:nodeKind sh:IRI ;
+		] ;
+	sh:property
+		[
+			sh:path prov:wasDerivedFrom ;
+			sh:minCount 1 ;
+			sh:nodeKind sh:IRI ;
+			sh:message "Every Option MUST cite the source that names this means."@en ;
+		] ;
+	sh:not
+		[
+			sh:or (
+				[ sh:class means:OptionAssessment ]
+				[ sh:class means:Selection ]
+			) ;
+			sh:message "An Option must not also be typed OptionAssessment or Selection."@en ;
+		] .
+
+means:OptionAssessment-shape
+	a sh:NodeShape ;
+	sh:targetClass means:OptionAssessment ;
+	sh:message "An OptionAssessment is an inferred friction and feasibility reading."@en ;
+	sh:property
+		[
+			sh:path means:assessesOption ;
+			sh:class means:Option ;
+			sh:minCount 1 ;
+			sh:maxCount 1 ;
+			sh:nodeKind sh:IRI ;
+		] ;
+	sh:property
+		[
+			sh:path means:identityFriction ;
+			sh:datatype xsd:string ;
+			sh:in ( "low" "moderate" "high" "not_in_source" ) ;
+			sh:minCount 1 ;
+			sh:maxCount 1 ;
+			sh:nodeKind sh:Literal ;
+		] ;
+	sh:property
+		[
+			sh:path means:delayBurden ;
+			sh:datatype xsd:string ;
+			sh:in ( "low" "moderate" "high" "not_in_source" ) ;
+			sh:minCount 1 ;
+			sh:maxCount 1 ;
+			sh:nodeKind sh:Literal ;
+		] ;
+	sh:property
+		[
+			sh:path means:detectionExposure ;
+			sh:datatype xsd:string ;
+			sh:in ( "low" "moderate" "high" "not_in_source" ) ;
+			sh:minCount 1 ;
+			sh:maxCount 1 ;
+			sh:nodeKind sh:Literal ;
+		] ;
+	sh:property
+		[
+			sh:path means:resourceCost ;
+			sh:datatype xsd:string ;
+			sh:in ( "low" "moderate" "high" "not_in_source" ) ;
+			sh:minCount 1 ;
+			sh:maxCount 1 ;
+			sh:nodeKind sh:Literal ;
+		] ;
+	sh:property
+		[
+			sh:path means:feasibility ;
+			sh:datatype xsd:string ;
+			sh:in ( "feasible" "removed" ) ;
+			sh:minCount 1 ;
+			sh:maxCount 1 ;
+			sh:nodeKind sh:Literal ;
+		] ;
+	sh:property
+		[
+			sh:path prov:wasGeneratedBy ;
+			sh:minCount 1 ;
+			sh:nodeKind sh:IRI ;
+			sh:message "Every OptionAssessment MUST carry prov:wasGeneratedBy."@en ;
+		] ;
+	sh:not
+		[
+			sh:or (
+				[ sh:class means:Option ]
+				[ sh:class traj:PhaseAssertion ]
+			) ;
+			sh:message "An OptionAssessment must not also be typed Option or PhaseAssertion."@en ;
+		] .
+
+means:OffenderCapability-shape
+	a sh:NodeShape ;
+	sh:targetClass means:OffenderCapability ;
+	sh:property
+		[
+			sh:path means:possessedBy ;
+			sh:minCount 1 ;
+			sh:maxCount 1 ;
+			sh:nodeKind sh:IRI ;
+		] ;
+	sh:property
+		[
+			sh:path means:enablesOption ;
+			sh:class means:Option ;
+			sh:minCount 1 ;
+			sh:nodeKind sh:IRI ;
+		] ;
+	sh:property
+		[
+			sh:path prov:wasDerivedFrom ;
+			sh:minCount 1 ;
+			sh:nodeKind sh:IRI ;
+		] .
+
+means:Constraint-shape
+	a sh:NodeShape ;
+	sh:targetClass means:Constraint ;
+	sh:property
+		[
+			sh:path means:removesOption ;
+			sh:class means:Option ;
+			sh:minCount 1 ;
+			sh:nodeKind sh:IRI ;
+		] ;
+	sh:property
+		[
+			sh:path means:constraintKind ;
+			sh:datatype xsd:string ;
+			sh:in ( "wall" "guardian" "access_denial" ) ;
+			sh:minCount 1 ;
+			sh:maxCount 1 ;
+			sh:nodeKind sh:Literal ;
+		] .
+
+means:Selection-shape
+	a sh:NodeShape ;
+	sh:targetClass means:Selection ;
+	sh:message "A Selection is an inferred choice from a menu. It carries no reward."@en ;
+	sh:property
+		[
+			sh:path means:selectsOption ;
+			sh:class means:Option ;
+			sh:minCount 1 ;
+			sh:maxCount 1 ;
+			sh:nodeKind sh:IRI ;
+		] ;
+	sh:property
+		[
+			sh:path means:amongOptions ;
+			sh:class means:Option ;
+			sh:minCount 2 ;
+			sh:nodeKind sh:IRI ;
+			sh:message "A Selection MUST name at least two options."@en ;
+		] ;
+	sh:property
+		[
+			sh:path means:selectionRule ;
+			sh:datatype xsd:string ;
+			sh:in ( "not_modeled" "satisficing" "discrete_choice" "opportunistic" ) ;
+			sh:minCount 1 ;
+			sh:maxCount 1 ;
+			sh:nodeKind sh:Literal ;
+		] ;
+	sh:property
+		[
+			sh:path prov:wasGeneratedBy ;
+			sh:minCount 1 ;
+			sh:nodeKind sh:IRI ;
+			sh:message "Every Selection MUST carry prov:wasGeneratedBy."@en ;
+		] ;
+	sh:not
+		[
+			sh:or (
+				[ sh:class means:Option ]
+				[ sh:class traj:PhaseAssertion ]
+			) ;
+			sh:message "A Selection must not also be typed Option or PhaseAssertion."@en ;
+		] .

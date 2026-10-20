@@ -1,0 +1,157 @@
+# Expected-INVALID benefit-at-expense fixture.
+# Both assessments contradict the derivation. This file MUST fail.
+# 1. A not_from_person edge is labeled realized_at_expense.
+# 2. A victim_sourced deception edge is labeled not_exploitation.
+# 3. Use of a minor (person_used, vulnerability) is labeled not_exploitation.
+# 4. A minor who is not the source is labeled realized_at_expense.
+
+@prefix bad: <http://example.org/kb/expense-invalid/> .
+@prefix expense: <http://example.org/ontology/expense/> .
+@prefix traj: <http://example.org/ontology/trajectories/> .
+@prefix uco-core: <https://ontology.unifiedcyberontology.org/uco/core/> .
+@prefix time: <http://www.w3.org/2006/time#> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+bad:run a prov:Activity ; uco-core:name "Invalid derivation" .
+bad:note a uco-core:UcoObject ; uco-core:name "Synthetic note" .
+bad:window a time:ProperInterval ; uco-core:name "Fixture window" .
+bad:start a traj:State ; uco-core:name "Start" .
+bad:end a traj:State ; uco-core:name "End" .
+
+bad:t-system a traj:Transition ;
+	traj:fromState bad:start ; traj:toState bad:end ; traj:trigger bad:note .
+bad:facet-system a uco-core:ConfidenceFacet ; uco-core:confidence "55"^^xsd:nonNegativeInteger .
+bad:phase-system a traj:PhaseAssertion ;
+	traj:assertsState bad:end ; traj:atInterval bad:window ;
+	traj:sequenceIndex "1"^^xsd:nonNegativeInteger ;
+	traj:isTerminal true ; traj:terminalPolarity "completed" ;
+	prov:wasDerivedFrom bad:note ; uco-core:hasFacet bad:facet-system .
+bad:traj-system a traj:Trajectory ;
+	uco-core:name "Wrong pass" ;
+	traj:hasPhaseAssertion bad:phase-system .
+bad:anat-system a expense:BenefitAnatomy ;
+	uco-core:name "Not from a person" ;
+	expense:onTransition bad:t-system ;
+	expense:suppliedByPerson false ;
+	expense:personRetainsValue false ;
+	expense:requiresPresence false ;
+	expense:preexisting false ;
+	expense:valueSurvivesVictim true ;
+	expense:advantageDefect "deception" ;
+	expense:anatomyRule "Derives not_from_person." ;
+	expense:benefitSource "not_from_person" ;
+	prov:wasGeneratedBy bad:run .
+bad:sep-system a expense:ExploitationAssessment ;
+	uco-core:name "Illegal pass on a non-person gain" ;
+	expense:assessesTrajectory bad:traj-system ;
+	expense:goalRealizingTransition bad:t-system ;
+	expense:hasBenefitAnatomy bad:anat-system ;
+	expense:extractionTestStatus "realized_at_expense" ;
+	expense:passesExtractionTest false ;
+	expense:passesExploitationTest true ;
+	expense:exploitationOnset bad:window ;
+	prov:wasGeneratedBy bad:run .
+
+bad:t-object a traj:Transition ;
+	traj:fromState bad:start ; traj:toState bad:end ; traj:trigger bad:note .
+bad:facet-object a uco-core:ConfidenceFacet ; uco-core:confidence "55"^^xsd:nonNegativeInteger .
+bad:phase-object a traj:PhaseAssertion ;
+	traj:assertsState bad:end ; traj:atInterval bad:window ;
+	traj:sequenceIndex "1"^^xsd:nonNegativeInteger ;
+	traj:isTerminal true ; traj:terminalPolarity "completed" ;
+	prov:wasDerivedFrom bad:note ; uco-core:hasFacet bad:facet-object .
+bad:traj-object a traj:Trajectory ;
+	uco-core:name "Wrong fail" ;
+	traj:hasPhaseAssertion bad:phase-object .
+bad:anat-object a expense:BenefitAnatomy ;
+	uco-core:name "Person's payment" ;
+	expense:onTransition bad:t-object ;
+	expense:transferredObject "preexisting payment" ;
+	expense:suppliedByPerson true ;
+	expense:personRetainsValue false ;
+	expense:requiresPresence false ;
+	expense:preexisting true ;
+	expense:valueSurvivesVictim true ;
+	expense:advantageDefect "deception" ;
+	expense:anatomyRule "Derives victim_sourced." ;
+	expense:benefitSource "victim_sourced" ;
+	prov:wasGeneratedBy bad:run .
+bad:sep-object a expense:ExploitationAssessment ;
+	uco-core:name "Illegal fail on a taking" ;
+	expense:assessesTrajectory bad:traj-object ;
+	expense:goalRealizingTransition bad:t-object ;
+	expense:hasBenefitAnatomy bad:anat-object ;
+	expense:extractionTestStatus "not_exploitation" ;
+	expense:passesExtractionTest false ;
+	expense:passesExploitationTest false ;
+	prov:wasGeneratedBy bad:run .
+
+bad:t-minor a traj:Transition ;
+	traj:fromState bad:start ; traj:toState bad:end ; traj:trigger bad:note .
+bad:facet-minor a uco-core:ConfidenceFacet ; uco-core:confidence "55"^^xsd:nonNegativeInteger .
+bad:phase-minor a traj:PhaseAssertion ;
+	traj:assertsState bad:end ; traj:atInterval bad:window ;
+	traj:sequenceIndex "1"^^xsd:nonNegativeInteger ;
+	traj:isTerminal true ; traj:terminalPolarity "completed" ;
+	prov:wasDerivedFrom bad:note ; uco-core:hasFacet bad:facet-minor .
+bad:traj-minor a traj:Trajectory ;
+	uco-core:name "Wrong fail on use of a minor" ;
+	traj:hasPhaseAssertion bad:phase-minor .
+bad:anat-minor a expense:BenefitAnatomy ;
+	uco-core:name "Recording from a minor" ;
+	expense:onTransition bad:t-minor ;
+	expense:transferredObject "recording produced from that person" ;
+	expense:suppliedByPerson true ;
+	expense:personRetainsValue false ;
+	expense:requiresPresence false ;
+	expense:preexisting false ;
+	expense:valueSurvivesVictim true ;
+	expense:advantageDefect "vulnerability" ;
+	expense:anatomyRule "Derives person_used." ;
+	expense:benefitSource "person_used" ;
+	prov:wasGeneratedBy bad:run .
+bad:sep-minor a expense:ExploitationAssessment ;
+	uco-core:name "Illegal fail on use of a minor" ;
+	expense:assessesTrajectory bad:traj-minor ;
+	expense:goalRealizingTransition bad:t-minor ;
+	expense:hasBenefitAnatomy bad:anat-minor ;
+	expense:extractionTestStatus "not_exploitation" ;
+	expense:passesExtractionTest false ;
+	expense:passesExploitationTest false ;
+	prov:wasGeneratedBy bad:run .
+
+bad:t-child-program a traj:Transition ;
+	traj:fromState bad:start ; traj:toState bad:end ; traj:trigger bad:note .
+bad:facet-child-program a uco-core:ConfidenceFacet ; uco-core:confidence "55"^^xsd:nonNegativeInteger .
+bad:phase-child-program a traj:PhaseAssertion ;
+	traj:assertsState bad:end ; traj:atInterval bad:window ;
+	traj:sequenceIndex "1"^^xsd:nonNegativeInteger ;
+	traj:isTerminal true ; traj:terminalPolarity "completed" ;
+	prov:wasDerivedFrom bad:note ; uco-core:hasFacet bad:facet-child-program .
+bad:traj-child-program a traj:Trajectory ;
+	uco-core:name "Wrong pass because a minor is named" ;
+	traj:hasPhaseAssertion bad:phase-child-program .
+bad:anat-child-program a expense:BenefitAnatomy ;
+	uco-core:name "Program funds, minor named" ;
+	expense:onTransition bad:t-child-program ;
+	expense:transferredObject "program payment" ;
+	expense:suppliedByPerson false ;
+	expense:personRetainsValue false ;
+	expense:requiresPresence false ;
+	expense:preexisting true ;
+	expense:valueSurvivesVictim true ;
+	expense:advantageDefect "vulnerability" ;
+	expense:anatomyRule "Derives not_from_person." ;
+	expense:benefitSource "not_from_person" ;
+	prov:wasGeneratedBy bad:run .
+bad:sep-child-program a expense:ExploitationAssessment ;
+	uco-core:name "Illegal pass because a minor is named" ;
+	expense:assessesTrajectory bad:traj-child-program ;
+	expense:goalRealizingTransition bad:t-child-program ;
+	expense:hasBenefitAnatomy bad:anat-child-program ;
+	expense:extractionTestStatus "realized_at_expense" ;
+	expense:passesExtractionTest false ;
+	expense:passesExploitationTest true ;
+	expense:exploitationOnset bad:window ;
+	prov:wasGeneratedBy bad:run .
