@@ -7,6 +7,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.32.0] - 2026-10-19
+
+Document mapping stops asserting implausible phones and institutional phrases as people, routing abstention returns ranked recipes, and an empty critic shell is not acceptance. SOLVE-IT classes pick up the properties defined by shapes in a nested shapes namespace.
+
+### Added
+
+- `route_investigation_content` attaches `ranked_recipe_hits` on abstain and on a weak family match. Hits are catalog recipes scored by how rare the overlapping tokens are, beside the existing ontology-gap workflow.
+- Critic rule `CRIT-H-ENTITY-TYPE-ANCHOR`. A Person whose name contains an institutional, financial, scientific, or method token, or a PhoneAccount whose identifier fails NANP area-code and exchange rules, is a high finding.
+
+### Changed
+
+- The generator treats a SHACL shape as a class's own when the shape's namespace is the class's namespace or a namespace nested under it. Shapes from another ontology, including CAC synthesis shapes on `uco-action:Action`, stay out. Thirty-one SOLVE-IT classes gain the properties those nested shapes declare, including `hasFile` and `sourceApplication` on `ApplicationFiles`.
+- Rust dependencies: `serde_json` 1.0.154, `sha2` 0.11.1, `uuid` 1.28.0. C# tests use `Microsoft.NET.Test.Sdk` 18.11.0. The Java Central publishing plugin is 0.12.0.
+
+### Fixed
+
+- `PHONE_RE` accepts only space, dot, and hyphen as separators, and a match is a `PhoneAccount` only when the area code and exchange do not start with 0 or 1. CIKs, Bates numbers, PageIDs, and `555-01x` examples stay in the text.
+- `of First Last` no longer creates a Person for institutional phrases such as "Goods Sold", "Nuclear Physics", or "Cape Town". A bold method name such as "Monte Carlo" is not a Person. Resource catalogs and training documents do not commit Person or PhoneAccount nodes; those spans are listed as withheld.
+- `finalize_critic_review` records `review_substance`. Two manual passes that send an empty findings list and an empty scorecard finish as `review_unattested` rather than `accepted`. A pass that assesses a scorecard dimension, or that files a finding, still counts as a review.
+- A SHACL `sh:select` parse failure is reported as `could_not_verify` and names the shape file. `DEFAULT_CONTEXT` includes `rdfs`.
+
+
+Package versions bumped to **1.32.0**.
+
 ## [1.31.2] - 2026-10-13
 
 Routing recognizes resource catalogs, and `case-uco-cac` ships typed Python
@@ -3192,7 +3216,8 @@ digital forensics, cyber-investigation, and cyber-observable data.
 - GitHub Actions workflows: CI, CodeQL, dependency review, release
 - Dependabot configuration for automated dependency updates
 
-[Unreleased]: https://github.com/vulnmaster/CASE-UCO-SDK/compare/v1.31.2...HEAD
+[Unreleased]: https://github.com/vulnmaster/CASE-UCO-SDK/compare/v1.32.0...HEAD
+[1.32.0]: https://github.com/vulnmaster/CASE-UCO-SDK/compare/v1.31.2...v1.32.0
 [1.31.2]: https://github.com/vulnmaster/CASE-UCO-SDK/compare/v1.31.1...v1.31.2
 [1.31.1]: https://github.com/vulnmaster/CASE-UCO-SDK/compare/v1.31.0...v1.31.1
 [1.31.0]: https://github.com/vulnmaster/CASE-UCO-SDK/releases/tag/v1.31.0

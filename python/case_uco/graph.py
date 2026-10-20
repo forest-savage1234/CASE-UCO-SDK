@@ -105,6 +105,7 @@ class DeserializationWarning:
 DEFAULT_CONTEXT: dict[str, str] = {
     "case-investigation": "https://ontology.caseontology.org/case/investigation/",
     "kb": "http://example.org/kb/",
+    "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
     "uco-action": "https://ontology.unifiedcyberontology.org/uco/action/",
     "uco-core": "https://ontology.unifiedcyberontology.org/uco/core/",
     "uco-identity": "https://ontology.unifiedcyberontology.org/uco/identity/",

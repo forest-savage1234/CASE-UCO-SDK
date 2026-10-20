@@ -326,7 +326,7 @@ def test_context_parity_all_prefixes():
     """Verify Python DEFAULT_CONTEXT has all standard UCO/CASE prefixes."""
     from case_uco.graph import DEFAULT_CONTEXT
     expected = [
-        "case-investigation", "uco-core", "uco-tool", "uco-observable",
+        "case-investigation", "rdfs", "uco-core", "uco-tool", "uco-observable",
         "uco-action", "uco-identity", "uco-location", "uco-types",
         "uco-vocabulary", "uco-role", "uco-victim", "uco-analysis",
         "uco-configuration", "uco-marking", "uco-pattern", "uco-time", "xsd",

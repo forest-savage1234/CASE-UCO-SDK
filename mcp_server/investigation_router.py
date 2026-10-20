@@ -31,8 +31,71 @@ from cac_content_router import (
     resolve_submission_text,
 )
 from document_genre import CATALOG_RECIPE, detect_document_genre
+from domain_index import RECIPE_INDEX
 
 MIN_FAMILY_SCORE = 2
+
+_RECIPE_QUERY_STOP = frozenset(
+    {
+        "the", "and", "for", "with", "that", "this", "from", "were", "was",
+        "are", "been", "have", "has", "not", "but", "into", "over", "under",
+        "than", "then", "them", "they", "their", "there", "these", "those",
+        "about", "after", "before", "between", "which", "while", "where",
+        "when", "what", "will", "would", "could", "should", "using", "used",
+        "also", "only", "each", "such", "other", "into", "onto", "per",
+        "via", "its", "our", "your", "present", "reported", "estimated",
+    }
+)
+
+
+def _recipe_blob(recipe: dict[str, str]) -> str:
+    return f"{recipe['title']} {recipe['description']} {recipe['keywords']}".lower()
+
+
+def ranked_recipe_hits(text: str, *, limit: int = 6) -> list[dict[str, Any]]:
+    """Top catalog recipes for an abstaining or weakly matched submission.
+
+    Scoring is the same catalog text ``get_recipes`` searches, weighted by how
+    rare each overlapping token is, so one common word does not outrank a
+    distinctive measurement or sensor term.
+    """
+
+    tokens: list[str] = []
+    seen: set[str] = set()
+    for raw in re.findall(r"[A-Za-z][A-Za-z0-9+/-]{3,}", text or ""):
+        word = raw.lower()
+        if word in _RECIPE_QUERY_STOP or word in seen:
+            continue
+        seen.add(word)
+        tokens.append(word)
+        if len(tokens) >= 24:
+            break
+    if not tokens:
+        return []
+    blobs = [(recipe, _recipe_blob(recipe)) for recipe in RECIPE_INDEX]
+    doc_freq = {
+        token: sum(1 for _recipe, blob in blobs if token in blob) for token in tokens
+    }
+    scored: list[tuple[float, dict[str, str], list[str]]] = []
+    for recipe, blob in blobs:
+        matched = [token for token in tokens if token in blob and doc_freq[token]]
+        if not matched:
+            continue
+        score = sum(1.0 / doc_freq[token] for token in matched)
+        scored.append((score, recipe, matched))
+    scored.sort(key=lambda item: (-item[0], item[1]["title"]))
+    hits = []
+    for score, recipe, matched in scored[:limit]:
+        hits.append(
+            {
+                "file": recipe["file"],
+                "score": round(score, 4),
+                "title": recipe["title"],
+                "rationale": recipe["description"],
+                "matched_terms": matched[:8],
+            }
+        )
+    return hits
 
 # Primary composition recipe for multi-domain / cross-ontology graphs (#66).
 # Prefer this over the legacy cross-domain-extensions.md redirect stub.
@@ -1526,6 +1589,7 @@ def route_investigation_content(
             gap = build_extension_gap_guidance()
             payload["extension_gap_guidance"] = gap
             payload["ordered_recommendations"]["ontology_gap_workflow"] = gap
+            payload["ranked_recipe_hits"] = ranked_recipe_hits(text)
             payload["message"] = (
                 "Weak family match — treat the routing below as a hint and "
                 "confirm coverage with search_classes before modeling; the "
@@ -1538,6 +1602,7 @@ def route_investigation_content(
             payload["abstained_candidates"] = abstained_candidates
         gap = build_extension_gap_guidance()
         payload["extension_gap_guidance"] = gap
+        payload["ranked_recipe_hits"] = ranked_recipe_hits(text)
         payload["ordered_recommendations"] = build_ordered_recommendations(
             [], installed, project_root=project_root
         )
@@ -1546,6 +1611,7 @@ def route_investigation_content(
             "previously unseen data type — follow ontology_gap_workflow / "
             "extension_gap_guidance to confirm coverage, file change "
             "proposals, and (if needed) build a local extension ontology "
-            "before modeling."
+            "before modeling. ranked_recipe_hits lists catalog recipes whose "
+            "keywords already overlap the submission; use those before filing a gap."
         )
     return payload

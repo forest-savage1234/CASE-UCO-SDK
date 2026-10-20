@@ -104,6 +104,79 @@ def validator_available() -> bool:
     return shutil.which(VALIDATOR_NAME) is not None
 
 
+def _case_validate_sparql_crashes(cmd: list[str], *, timeout_seconds: int) -> bool:
+    """Return True when a case_validate command dies on SPARQL ParseException."""
+
+    try:
+        completed = subprocess.run(
+            cmd,
+            capture_output=True,
+            text=True,
+            timeout=timeout_seconds,
+            check=False,
+        )
+    except subprocess.TimeoutExpired:
+        return False
+    text = f"{completed.stdout}\n{completed.stderr}"
+    return "ParseException" in text or "Expected SelectQuery" in text
+
+
+def _isolate_sparql_crash_shape_files(
+    *,
+    graph: Path,
+    ontology_paths: list[Path],
+    base_args: list[str],
+    timeout_seconds: int,
+) -> list[Path]:
+    """Binary-search which shape file(s) make case_validate raise ParseException.
+
+    Non-shape ontology graphs stay loaded. Only shape files are searched, so
+    the reported name is the failing shapes TTL, not the caller's data graph.
+    """
+
+    shapes = [p for p in ontology_paths if "shape" in p.name.lower()]
+    nons = [p for p in ontology_paths if p not in shapes]
+    if not shapes:
+        return []
+
+    def cmd_with(shape_subset: list[Path]) -> list[str]:
+        cmd = list(base_args)
+        for path in nons + shape_subset:
+            cmd.extend(["--ontology-graph", str(path)])
+        cmd.append(str(graph))
+        return cmd
+
+    if not _case_validate_sparql_crashes(
+        cmd_with(shapes), timeout_seconds=timeout_seconds
+    ):
+        return []
+
+    remaining = list(shapes)
+    # Binary-search only. Do not regex-guess across shape files: many CAC
+    # modules contain the same `; ?var` antipattern in unevaluated queries,
+    # and listing them implies they crashed for this graph when they did not.
+    while len(remaining) > 1:
+        mid = len(remaining) // 2
+        left, right = remaining[:mid], remaining[mid:]
+        if _case_validate_sparql_crashes(
+            cmd_with(left), timeout_seconds=timeout_seconds
+        ):
+            remaining = left
+            continue
+        if _case_validate_sparql_crashes(
+            cmd_with(right), timeout_seconds=timeout_seconds
+        ):
+            remaining = right
+            continue
+        return []
+
+    if len(remaining) == 1 and _case_validate_sparql_crashes(
+        cmd_with(remaining), timeout_seconds=timeout_seconds
+    ):
+        return remaining
+    return []
+
+
 def _validator_package_version() -> str | None:
     try:
         import importlib.metadata as metadata
@@ -479,7 +552,51 @@ def validate_graph_file(
     warning_count = combined.count(_WARNING_MARKER)
     exit_code = completed.returncode
 
-    if conforms is True and violation_count == 0:
+    sparql_crash_files: tuple[Path, ...] = ()
+    if "ParseException" in combined or "Expected SelectQuery" in combined:
+        # case_validate/pyshacl crashed while parsing a SHACL SPARQL constraint.
+        # Blame the shape file, not the caller's graph.
+        ontology_paths: list[Path] = []
+        if resolved_bundle is not None:
+            ontology_paths = list(resolved_bundle.ontology_graph_paths())
+        else:
+            for i, arg in enumerate(args):
+                if arg == "--ontology-graph" and i + 1 < len(args):
+                    ontology_paths.append(Path(args[i + 1]))
+        # Strip trailing graph path and ontology-graph pairs for the isolator.
+        base_args = [VALIDATOR_NAME]
+        if allow_warning:
+            base_args.append("--allow-warning")
+        base_args.extend(["--built-version", DEFAULT_BUILT_VERSION, "--allow-info"])
+        if "--inference" in args:
+            # Keep the same inference flag the crashing run used.
+            idx = args.index("--inference")
+            base_args.extend(args[idx : idx + 2])
+        sparql_crash_files = tuple(
+            _isolate_sparql_crash_shape_files(
+                graph=graph,
+                ontology_paths=ontology_paths,
+                base_args=base_args,
+                timeout_seconds=timeout_seconds,
+            )
+        )
+        conforms = None
+        shacl_execution_status = "failed"
+        shacl_conformance_status = "could_not_verify"
+        if sparql_crash_files:
+            named = ", ".join(p.name for p in sparql_crash_files)
+            summary = (
+                "Validator crashed while parsing SHACL SPARQL in shape file(s): "
+                f"{named}. This is an ontology/shapes defect (or a case_validate "
+                "SPARQL parser limit), not a defect in the submitted graph."
+            )
+        else:
+            summary = (
+                "Validator crashed with a SPARQL ParseException while evaluating "
+                "SHACL constraints. The failing shape file could not be isolated; "
+                "inspect case_validate stderr. Do not treat the graph as conforming."
+            )
+    elif conforms is True and violation_count == 0:
         shacl_conformance_status = "conforms"
     elif conforms is False or violation_count > 0:
         shacl_conformance_status = "nonconformant"
@@ -487,7 +604,11 @@ def validate_graph_file(
         shacl_conformance_status = "unknown"
         shacl_execution_status = "failed"
 
-    if exit_code == 0 and conforms is not False and violation_count == 0:
+    if sparql_crash_files or (
+        "ParseException" in combined or "Expected SelectQuery" in combined
+    ):
+        pass  # summary already set above
+    elif exit_code == 0 and conforms is not False and violation_count == 0:
         if warning_count > 0:
             summary = (
                 f"Graph conforms with {warning_count} validator warning(s); "
@@ -524,7 +645,18 @@ def validate_graph_file(
     coverage_execution_status = "skipped"
     coverage_conformance_status = "skipped"
 
-    if strict_concepts:
+    if "ParseException" in combined or "Expected SelectQuery" in combined:
+        verification_status = "could_not_verify"
+        named = tuple(p.name for p in sparql_crash_files)
+        verification_errors = (
+            ("shacl_sparql_parse_failed:" + ",".join(named),)
+            if named
+            else ("shacl_sparql_parse_failed",)
+        )
+        # Do not claim SHACL or coverage passed after a shapes crash.
+        conforms = None
+
+    if strict_concepts and verification_status != "could_not_verify":
         coverage_execution_status = "complete"
         try:
             from case_uco.validation.coverage import check_graph_concepts

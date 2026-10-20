@@ -76,8 +76,20 @@ def _empty_critic_response(started: dict) -> dict:
         "review_config_sha256": package.get("review_config_sha256"),
         "findings": [],
         "finding_assessments": [],
-        "scorecard": {},
+        "scorecard": {
+            "semantic_precision": {
+                "assessed": True,
+                "score": 4,
+                "evidence": ["reviewed entity types against source text"],
+            }
+        },
     }
+
+
+def _shell_critic_response(started: dict) -> dict:
+    payload = _empty_critic_response(started)
+    payload["scorecard"] = {}
+    return payload
 
 
 def _critical_critic_finding(started: dict) -> dict:
@@ -121,6 +133,33 @@ def test_two_pass_manual_finalize(workspace):
     final = finalize_critic_review(sid)
     assert final["state"] == "finalized"
     assert final["outcome"] in {"accepted", "completed_with_findings"}
+    assert final["review_substance"] == "reviewed"
+
+
+def test_empty_shell_review_is_not_accepted(workspace, monkeypatch):
+    import critic.deterministic as det
+
+    monkeypatch.setattr(
+        det,
+        "lint_kind_of_relationship",
+        lambda *a, **k: {"ok": True, "checked": 0, "findings": []},
+    )
+    read, _write = workspace
+    graph = _copy_gold(read)
+    started = start_critic_review(
+        graph_path=str(graph),
+        critic_scope="graph",
+        model_policy="manual",
+    )
+    sid = started["session_id"]
+    submit_manual_critic_response(sid, _shell_critic_response(started))
+    revised = submit_critic_revision(sid, graph_path=str(graph), change_summary="confirm")
+    submit_manual_critic_response(sid, _shell_critic_response(revised))
+    final = finalize_critic_review(sid)
+    assert final["state"] == "finalized"
+    assert final["review_substance"] == "empty_shell"
+    assert final["outcome"] == "review_unattested"
+    assert final["accepted"] is False
 
 
 def test_two_pass_repair_charged_with_accepted(workspace, monkeypatch):

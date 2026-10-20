@@ -1541,6 +1541,34 @@ def get_critic_review_status(session_id: str) -> dict[str, Any]:
     }
 
 
+def _model_review_attested(
+    *,
+    finding_count: int,
+    assessment_count: int,
+    notes: str,
+    scorecard: CriticScorecard,
+) -> bool:
+    """Whether a manual pass shows that someone reviewed the graph.
+
+    An empty findings list with an empty scorecard is a schema shell. It is
+    not evidence that entity types were compared to their source text.
+    """
+
+    if finding_count or assessment_count or notes.strip():
+        return True
+    dimensions = (
+        scorecard.schema_concept_conformance,
+        scorecard.source_fidelity,
+        scorecard.semantic_precision,
+        scorecard.provenance_custody,
+        scorecard.markings_authorization,
+        scorecard.coverage_completeness,
+        scorecard.serializer_quality,
+        scorecard.maintainability_reproducibility,
+    )
+    return any(dimension.assessed for dimension in dimensions)
+
+
 def submit_manual_critic_response(
     session_id: str,
     response: dict[str, Any] | str,
@@ -1637,6 +1665,12 @@ def submit_manual_critic_response(
             "scorecard": completed["scorecard"],
             "completed_status": completed["status"],
             "finding_counts": completed["finding_counts"],
+            "model_review_attested": _model_review_attested(
+                finding_count=len(critic_findings),
+                assessment_count=len(assessments),
+                notes=str(parsed.get("notes") or ""),
+                scorecard=model_scorecard,
+            ),
         }
         if sampling:
             # Persist sampling metadata (model, tokens, status, fallback reason).
@@ -2124,11 +2158,28 @@ def finalize_critic_review(session_id: str) -> dict[str, Any]:
         if outcome == "blocked_with_findings":
             raise CriticSessionError("critic_session_blockers_remain")
 
+        review_substance = "not_applicable"
+        if policy != "disabled":
+            critic_passes = [
+                item.get("critic") or {}
+                for item in session.get("passes") or []
+                if item.get("critic")
+            ]
+            if critic_passes and all(
+                item.get("model_review_attested") is False for item in critic_passes
+            ):
+                review_substance = "empty_shell"
+            elif critic_passes:
+                review_substance = "reviewed"
+            if outcome == "accepted" and review_substance == "empty_shell":
+                outcome = "review_unattested"
+
         report_payload = {
             "session_id": session_id,
             "finalized": True,
             "outcome": outcome,
             "accepted": outcome == "accepted",
+            "review_substance": review_substance,
             "latest_artifact_hash": session["latest_artifact_hash"],
             "latest_reviewed_artifacts": reviewed_set,
             "summary": summary,
@@ -2178,6 +2229,7 @@ def finalize_critic_review(session_id: str) -> dict[str, Any]:
             "state": "finalized",
             "outcome": outcome,
             "accepted": session["accepted"],
+            "review_substance": review_substance,
             "latest_artifact_hash": session["latest_artifact_hash"],
             "latest_reviewed_hash": session["latest_reviewed_hash"],
             "latest_reviewed_artifacts": reviewed_set,

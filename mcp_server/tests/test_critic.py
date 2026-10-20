@@ -39,6 +39,46 @@ def test_production_shaped_seeded_heuristics():
     assert all(e.status == "evaluated" for e in executions)
 
 
+def test_person_name_anchor_rejects_institutional_phrase(tmp_path: Path):
+    graph = tmp_path / "persons.jsonld"
+    graph.write_text(
+        json.dumps(
+            {
+                "@context": {
+                    "uco-core": "https://ontology.unifiedcyberontology.org/uco/core/",
+                    "uco-identity": "https://ontology.unifiedcyberontology.org/uco/identity/",
+                    "case-investigation": "https://ontology.caseontology.org/case/investigation/",
+                },
+                "@graph": [
+                    {
+                        "@id": "urn:example:inv",
+                        "@type": "case-investigation:Investigation",
+                        "uco-core:name": "Synthetic",
+                        "uco-core:object": {"@id": "urn:example:person"},
+                    },
+                    {
+                        "@id": "urn:example:person",
+                        "@type": "uco-identity:Person",
+                        "uco-core:name": "Goods Sold",
+                    },
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+    findings, executions = run_graph_heuristics(
+        load_canonical_graph(graph), artifact_hash="anchor"
+    )
+    assert "CRIT-H-ENTITY-TYPE-ANCHOR" in {f.rule_id for f in findings}
+    assert any(e.rule_id == "CRIT-H-ENTITY-TYPE-ANCHOR" and e.status == "evaluated" for e in executions)
+
+
+def test_gold_person_name_is_not_an_anchor_mismatch():
+    view = load_canonical_graph(FIXTURES / "gold-charged-with.jsonld")
+    findings, _ = run_graph_heuristics(view, artifact_hash="gold-anchor")
+    assert "CRIT-H-ENTITY-TYPE-ANCHOR" not in {f.rule_id for f in findings}
+
+
 def test_gold_charged_with_no_direction_finding():
     view = load_canonical_graph(FIXTURES / "gold-charged-with.jsonld")
     findings, _ = run_graph_heuristics(view, artifact_hash="abc")

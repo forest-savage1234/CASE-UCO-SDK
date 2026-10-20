@@ -1085,10 +1085,12 @@ def _structured_cell_records(
 
     token = _header_token(header)
     if _is_header_kind(header, _PHONE_HEADER_PARTS):
-        from document_semantic_mapping import PHONE_RE
+        from document_semantic_mapping import PHONE_RE, _is_plausible_nanp_phone
 
         for match in PHONE_RE.finditer(value):
             candidate = match.group(0).strip()
+            if not _is_plausible_nanp_phone(candidate):
+                continue
             found.append(
                 ExtractedRecord(
                     label=f"Phone {candidate}",
@@ -1628,24 +1630,36 @@ def records_for_text_document(
     *,
     document_label_prefix: str,
     run_seed: str,
-) -> list[ExtractedRecord]:
-    """Semantic CASE/UCO mapping records with anchors, or one honest fallback."""
+) -> tuple[list[ExtractedRecord], dict[str, str]]:
+    """Semantic CASE/UCO mapping records with anchors, or one honest fallback.
+
+    The second value is summary metadata: document genre, and spans that stayed
+    in the extracted text because they were below the assertion threshold.
+    """
 
     from document_semantic_mapping import (
         extract_semantic_entities,
+        partition_asserted_entities,
         repair_ocr_cyber_identifiers,
         semantic_entities_to_records,
     )
 
     full_text = repair_ocr_cyber_identifiers(full_text)
     entities = extract_semantic_entities(full_text, run_seed=run_seed)
-    mentions = semantic_entities_to_records(entities)
+    asserted, withheld, genre = partition_asserted_entities(entities, full_text)
+    mentions = semantic_entities_to_records(asserted)
+    meta: dict[str, str] = {}
+    if genre:
+        meta["document_genre"] = str(genre["genre"])
+    if withheld:
+        meta["withheld_entity_count"] = str(len(withheld))
+        meta["withheld_spans"] = "; ".join(entity.label for entity in withheld[:12])[:500]
     if mentions:
         records: list[ExtractedRecord] = []
         by_identity: dict[tuple[str, str], int] = {}
         for mention in mentions:
             _append_unique_record(records, by_identity, mention)
-        return records
+        return records, meta
     record_text = full_text[:MAX_RECORD_TEXT]
     _, anchor = text_section_content(full_text)
     return [
@@ -1655,7 +1669,7 @@ def records_for_text_document(
             anchor=anchor,
             ontology_class="uco-observable:ObservableObject",
         )
-    ]
+    ], meta
 
 
 def text_section_content(full_text: str) -> tuple[dict[str, Any], dict[str, Any]]:
@@ -1729,7 +1743,7 @@ def extract_markdown_content(source: Path) -> ExtractedContent:
     else:
         canonical, _anchor = text_section_content(joined)
     run_seed = f"{source.name}:{joined[:32]}"
-    records = records_for_text_document(
+    records, mapping_meta = records_for_text_document(
         joined, document_label_prefix="Markdown text", run_seed=run_seed
     )
     return ExtractedContent(
@@ -1739,6 +1753,7 @@ def extract_markdown_content(source: Path) -> ExtractedContent:
             "extracted_text": joined[:240],
             "semantic_entity_count": str(len(records)),
             "table_sheet_count": str(len(table_sheets or [])),
+            **mapping_meta,
         },
         records=records,
         canonical=canonical,
@@ -1752,7 +1767,7 @@ def extract_plain_text_content(source: Path) -> ExtractedContent:
         raise ValueError("no_extractable_content")
     canonical, _anchor = text_section_content(joined)
     run_seed = f"{source.name}:{joined[:32]}"
-    records = records_for_text_document(
+    records, mapping_meta = records_for_text_document(
         joined, document_label_prefix="Plain text", run_seed=run_seed
     )
     return ExtractedContent(
@@ -1761,6 +1776,7 @@ def extract_plain_text_content(source: Path) -> ExtractedContent:
             "document_type": "Plain text",
             "extracted_text": joined[:240],
             "semantic_entity_count": str(len(records)),
+            **mapping_meta,
         },
         records=records,
         canonical=canonical,
@@ -1807,7 +1823,7 @@ def extract_json_metadata_content(source: Path) -> ExtractedContent:
         raise ValueError("no_extractable_content")
     canonical, _anchor = text_section_content(joined)
     run_seed = f"{source.name}:{joined[:32]}"
-    records = records_for_text_document(
+    records, mapping_meta = records_for_text_document(
         joined, document_label_prefix="JSON metadata", run_seed=run_seed
     )
     return ExtractedContent(
@@ -1816,6 +1832,7 @@ def extract_json_metadata_content(source: Path) -> ExtractedContent:
             "document_type": "JSON metadata",
             "extracted_text": joined[:240],
             "semantic_entity_count": str(len(records)),
+            **mapping_meta,
         },
         records=records,
         canonical=canonical,
@@ -1840,7 +1857,7 @@ def extract_svg_content(source: Path) -> ExtractedContent:
         joined = "SVG diagram with no extractable text labels."
     canonical, _anchor = text_section_content(joined)
     run_seed = f"{source.name}:{joined[:32]}"
-    records = records_for_text_document(
+    records, mapping_meta = records_for_text_document(
         joined, document_label_prefix="SVG text", run_seed=run_seed
     )
     return ExtractedContent(
@@ -1850,6 +1867,7 @@ def extract_svg_content(source: Path) -> ExtractedContent:
             "extracted_text": joined[:240],
             "label_count": str(len(labels)),
             "semantic_entity_count": str(len(records)),
+            **mapping_meta,
         },
         records=records,
         canonical=canonical,
@@ -2139,7 +2157,7 @@ def extract_xlsx_content(
             if not fallback:
                 raise ValueError("office_text_missing")
             canonical, _anchor = text_section_content(fallback)
-            records = records_for_text_document(
+            records, mapping_meta = records_for_text_document(
                 fallback,
                 document_label_prefix="Spreadsheet text",
                 run_seed=f"{source.name}:{fallback[:32]}",
@@ -2152,6 +2170,7 @@ def extract_xlsx_content(
                     "worksheet_count": "0",
                     "shared_string_count": str(len(shared_strings)),
                     "semantic_entity_count": str(len(records)),
+                    **mapping_meta,
                 },
                 records=records,
                 canonical=canonical,
@@ -2588,7 +2607,7 @@ def extract_docx_content(source: Path) -> ExtractedContent:
     if not joined:
         raise ValueError("office_text_missing")
     canonical, _anchor = text_section_content(joined)
-    records = records_for_text_document(
+    records, mapping_meta = records_for_text_document(
         joined,
         document_label_prefix="Office text",
         run_seed=f"{source.name}:{joined[:32]}",
@@ -2600,6 +2619,7 @@ def extract_docx_content(source: Path) -> ExtractedContent:
             "extracted_text": joined[:240],
             "source_part_count": str(len(texts)),
             "semantic_entity_count": str(len(records)),
+            **mapping_meta,
         },
         records=records,
         canonical=canonical,
@@ -3450,7 +3470,7 @@ def extract_pdf_content(source: Path) -> ExtractedContent:
     text = repair_ocr_cyber_identifiers(text)
     canonical, _anchor = text_section_content(text)
     run_seed = f"{source.name}:{text[:32]}"
-    records = records_for_text_document(text, document_label_prefix="PDF text", run_seed=run_seed)
+    records, mapping_meta = records_for_text_document(text, document_label_prefix="PDF text", run_seed=run_seed)
     summary_fields = {
         "document_type": "PDF document",
         "extracted_text": text[:240],
@@ -3458,6 +3478,7 @@ def extract_pdf_content(source: Path) -> ExtractedContent:
         "semantic_entity_count": str(len(records)),
     }
     summary_fields.update(page_diagnostics)
+    summary_fields.update(mapping_meta)
     return ExtractedContent(
         document_type="PDF document",
         summary_fields=summary_fields,
@@ -3502,7 +3523,7 @@ def extract_image_content(source: Path) -> ExtractedContent:
     text = repair_ocr_cyber_identifiers(text)
     canonical, _anchor = text_section_content(text)
     run_seed = f"{source.name}:{text[:32]}"
-    records = records_for_text_document(text, document_label_prefix="Image text", run_seed=run_seed)
+    records, mapping_meta = records_for_text_document(text, document_label_prefix="Image text", run_seed=run_seed)
     return ExtractedContent(
         document_type="Receipt image",
         summary_fields={
@@ -3510,6 +3531,7 @@ def extract_image_content(source: Path) -> ExtractedContent:
             "extracted_text": text[:240],
             "extraction_method": extraction_method,
             "semantic_entity_count": str(len(records)),
+            **mapping_meta,
         },
         records=records,
         canonical=canonical,

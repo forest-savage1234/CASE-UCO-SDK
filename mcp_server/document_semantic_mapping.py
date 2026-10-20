@@ -175,8 +175,50 @@ EMAIL_RE = re.compile(
     r"\b[A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,}\b"
 )
 PHONE_RE = re.compile(
-    r"(?<!\d)(?:\+?1[-.\s]?)?(?:\(\d{3}\)|\d{3})[-.\s]?\d{3}[-.\s]?\d{4}(?!\d)"
+    # Separators are space, dot, or hyphen only — not \\s — so newlines cannot
+    # glue digit runs across lines into a false PhoneAccount.
+    r"(?<!\d)(?:\+?1[-. ]?)?(?:\(\d{3}\)|\d{3})[-. ]?\d{3}[-. ]?\d{4}(?!\d)"
 )
+
+
+def _name_tokens_are_non_person(parts: list[str]) -> bool:
+    return any(part.lower().strip(".,") in _NON_PERSON_NAME_TOKENS for part in parts)
+
+
+def _institutional_of_phrase(full_text: str, start: int) -> bool:
+    prefix = full_text[max(0, start - 48) : start]
+    return _INSTITUTIONAL_OF_RE.search(prefix) is not None
+
+
+def _bold_person_confidence(full_text: str, start: int, end: int) -> float:
+    """Bold title case is a person only when a nearby cue says so.
+
+    ``**Monte Carlo** method`` is a method name. ``**Dylan Reyes** (DOB ...)``
+    is a person. Without a cue the span stays below the assertion threshold.
+    """
+
+    window = full_text[max(0, start - 80) : min(len(full_text), end + 40)]
+    if _PERSON_CUE_RE.search(window):
+        return 0.9
+    return 0.35
+
+
+def _is_plausible_nanp_phone(value: str) -> bool:
+    """Whether a ``PHONE_RE`` match is a plausible NANP number.
+
+    ``PHONE_RE`` is US/Canada-shaped (optional ``+1`` / ``1`` plus 10 digits).
+    Under NANP, the area code (NPA) and exchange (NXX) cannot start with 0 or 1.
+    Rejecting those spans stops CIKs, Bates stamps, PageIDs, and reserved
+    ``555-01x`` example numbers from becoming ``PhoneAccount`` nodes.
+    """
+
+    digits = re.sub(r"\D", "", value or "")
+    if len(digits) == 11 and digits.startswith("1"):
+        digits = digits[1:]
+    if len(digits) != 10:
+        return False
+    npa, nxx = digits[0], digits[3]
+    return npa not in "01" and nxx not in "01"
 URL_RE = re.compile(r"https?://[^\s<>\"']+|www\.[A-Za-z0-9.\-/]+")
 MONEY_RE = re.compile(r"\$\s?\d{1,6}(?:,\d{3})*(?:\.\d{2})?")
 DATE_RE = re.compile(
@@ -434,6 +476,44 @@ PERSON_AKA_RE = re.compile(
 PERSON_OF_RE = re.compile(
     r"\bof\s+\*?\*?([A-Z][a-z]+)\s+([A-Z][a-z]+)\*?\*?\s*(?:\(|,|\.)"
 )
+# "of First Last" also matches institutional phrases ("of Goods Sold",
+# "of Nuclear Physics", "of Cape Town"). Those tokens are not personal names.
+_NON_PERSON_NAME_TOKENS = frozenset(
+    {
+        "goods",
+        "sold",
+        "nuclear",
+        "physics",
+        "cape",
+        "town",
+        "department",
+        "university",
+        "college",
+        "institute",
+        "school",
+        "monte",
+        "carlo",
+        "revenue",
+        "fiscal",
+        "method",
+        "simulation",
+        "cost",
+        "shares",
+        "outstanding",
+        "boson",
+        "higgs",
+    }
+)
+_INSTITUTIONAL_OF_RE = re.compile(
+    r"(?:Department|University|College|School|Institute|Cost|City|Ministry|Office)\s+of\s+$",
+    re.IGNORECASE,
+)
+_PERSON_CUE_RE = re.compile(
+    r"\b(?:defendant|victim|officer|agent|aka|dob|year-old|charged|resident|witness|suspect|arrestee)\b",
+    re.IGNORECASE,
+)
+# Spans below this confidence stay in extracted text and are not asserted.
+ASSERT_MIN_CONFIDENCE = 0.7
 ROLE_TABLE_PERSON_RE = re.compile(
     r"\|\s*(?:Applying Agent|Victim|Groomer|Analyst|Mule(?:\s*/\s*cash-out)?|"
     r"Account Holder|Exchange User|Registered User)\s*\|\s*"
@@ -608,6 +688,7 @@ class SemanticEntity:
     section_id: str = "s1"
     graph_facets: tuple[dict[str, Any], ...] = ()
     extra_properties: dict[str, Any] = field(default_factory=dict)
+    confidence: float = 0.9
 
 
 def _anchor(section_id: str, start: int, end: int, exact: str) -> dict[str, Any]:
@@ -655,6 +736,7 @@ def _add_person_match(
     section_id: str,
     run_seed: str,
     alias: str | None = None,
+    confidence: float = 0.9,
 ) -> None:
     person_key = (first.lower(), last.lower())
     if person_key in seen_people:
@@ -674,6 +756,7 @@ def _add_person_match(
         extra_properties={
             "uco-core:description": f"Person referenced in document text: {label}.",
         },
+        confidence=confidence,
     )
 
 
@@ -763,6 +846,7 @@ def _add_match(
     run_seed: str,
     facets: tuple[dict[str, Any], ...] = (),
     extra_properties: dict[str, Any] | None = None,
+    confidence: float = 0.9,
 ) -> None:
     key = (start, end, ontology_class)
     if key in seen_spans or not matched_text.strip():
@@ -777,9 +861,36 @@ def _add_match(
             end=end,
             section_id=section_id,
             graph_facets=facets or (),
-            extra_properties=extra_properties or {},
+            extra_properties=dict(extra_properties or {}),
+            confidence=confidence,
         )
     )
+
+
+def partition_asserted_entities(
+    entities: list[SemanticEntity],
+    text: str,
+) -> tuple[list[SemanticEntity], list[SemanticEntity], dict[str, Any] | None]:
+    """Split spans into asserted nodes and review-only spans.
+
+    A resource catalog or training document does not commit Person or
+    PhoneAccount nodes. Spans under ``ASSERT_MIN_CONFIDENCE`` stay in the
+    extracted text for a person to review.
+    """
+
+    from document_genre import detect_document_genre
+
+    genre = detect_document_genre(text)
+    gated = {"uco-identity:Person", "uco-observable:PhoneAccount"}
+    asserted: list[SemanticEntity] = []
+    withheld: list[SemanticEntity] = []
+    for entity in entities:
+        genre_gated = genre is not None and entity.ontology_class in gated
+        if genre_gated or entity.confidence < ASSERT_MIN_CONFIDENCE:
+            withheld.append(entity)
+        else:
+            asserted.append(entity)
+    return asserted, withheld, genre
 
 
 def extract_semantic_entities(
@@ -820,6 +931,8 @@ def extract_semantic_entities(
 
     for match in PHONE_RE.finditer(full_text):
         value = match.group(0).strip()
+        if not _is_plausible_nanp_phone(value):
+            continue
         _add_match(
             matches,
             seen_spans,
@@ -1032,6 +1145,8 @@ def extract_semantic_entities(
             continue
         if any(part.lower() in PERSON_NAME_STOPWORDS for part in parts):
             continue
+        if _name_tokens_are_non_person(parts):
+            continue
         first, last = parts[0], parts[-1]
         _add_person_match(
             matches,
@@ -1044,6 +1159,7 @@ def extract_semantic_entities(
             end=match.end(),
             section_id=section_id,
             run_seed=run_seed,
+            confidence=_bold_person_confidence(full_text, match.start(), match.end()),
         )
 
     for match in PERSON_AKA_RE.finditer(full_text):
@@ -1067,6 +1183,10 @@ def extract_semantic_entities(
     for match in PERSON_OF_RE.finditer(full_text):
         first, last = match.group(1), match.group(2)
         if first.lower() in PERSON_NAME_STOPWORDS or last.lower() in PERSON_NAME_STOPWORDS:
+            continue
+        if _name_tokens_are_non_person([first, last]):
+            continue
+        if _institutional_of_phrase(full_text, match.start()):
             continue
         _add_person_match(
             matches,

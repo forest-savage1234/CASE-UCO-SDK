@@ -271,6 +271,22 @@ def test_unseen_data_returns_extension_gap_guidance() -> None:
     guidance = payload["extension_gap_guidance"]
     assert any("draft_change_proposal" in step for step in guidance["workflow"])
     assert "docs/recipes/extensions.md" in guidance["recipes"]
+    assert "ranked_recipe_hits" in payload
+
+
+def test_abstain_includes_ranked_recipe_hits() -> None:
+    text = (
+        "Abstract synthetic. We present a Monte Carlo simulation of Higgs boson "
+        "production at a center-of-mass energy of 13 TeV. Event yields are estimated "
+        "with samples. Detector acceptance and luminosity measurement are reported. "
+        "No human subjects were involved."
+    )
+    payload = route_investigation_content(PROJECT_ROOT, content_text=text)
+    assert payload["matched_families"] == []
+    assert payload["routing_confidence"]["level"] == "abstain"
+    files = [hit["file"] for hit in payload["ranked_recipe_hits"]]
+    assert "docs/recipes/qudt-quantities-and-units.md" in files
+    assert all("score" in hit and hit["rationale"] for hit in payload["ranked_recipe_hits"])
 
 
 def test_graph_file_submission_routes() -> None:

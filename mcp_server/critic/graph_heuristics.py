@@ -7,6 +7,7 @@ from collections import Counter, defaultdict
 from typing import Callable
 
 from critic.canonical import (
+    DEFAULT_PREFIXES,
     IRI_ACCOUNT,
     IRI_ACTION_OBJECT,
     IRI_ACTION_RESULT,
@@ -129,6 +130,7 @@ def run_graph_heuristics(
             "CRIT-H-BROKEN-CRYPTO-ADDRESS-STRING",
             _broken_crypto_address_string,
         ),
+        ("CRIT-H-ENTITY-TYPE-ANCHOR", _entity_type_anchor_mismatch),
     ]
     for rule_id, runner in runners:
         try:
@@ -180,6 +182,7 @@ _ALL_RULE_IDS = [
     "CRIT-H-ORPHAN-TOP-LEVEL",
     "CRIT-H-LEGAL-PROCESS-NO-INVESTIGATION",
     "CRIT-H-BROKEN-CRYPTO-ADDRESS-STRING",
+    "CRIT-H-ENTITY-TYPE-ANCHOR",
 ]
 
 
@@ -213,6 +216,129 @@ def _finding(
         verifier_rule_id=rule_id,
         identity_key=finding_id,
     )
+
+
+_NON_PERSON_NAME_TOKENS = frozenset(
+    {
+        "goods",
+        "sold",
+        "nuclear",
+        "physics",
+        "cape",
+        "town",
+        "department",
+        "university",
+        "college",
+        "institute",
+        "school",
+        "monte",
+        "carlo",
+        "revenue",
+        "fiscal",
+        "method",
+        "simulation",
+        "cost",
+        "shares",
+        "outstanding",
+        "boson",
+        "higgs",
+    }
+)
+_NANP_DIGIT_RE = re.compile(r"\d")
+
+
+def _nanp_digits_implausible(value: str) -> bool:
+    digits = "".join(_NANP_DIGIT_RE.findall(value or ""))
+    if len(digits) == 11 and digits.startswith("1"):
+        digits = digits[1:]
+    if len(digits) != 10:
+        return False
+    return digits[0] in "01" or digits[3] in "01"
+
+
+def _entity_type_anchor_mismatch(
+    view: CanonicalGraphView,
+) -> tuple[list[CriticFinding], int]:
+    """Flag Person and PhoneAccount labels that contradict their own text.
+
+    A Person named from an institutional or method phrase ("Goods Sold",
+    "Nuclear Physics", "Monte Carlo") is not a person. A PhoneAccount whose
+    identifier fails NANP NPA/NXX rules is not a telephone number.
+    """
+
+    phone_type = DEFAULT_PREFIXES["uco-observable"] + "PhoneAccount"
+    account_id = DEFAULT_PREFIXES["uco-observable"] + "accountIdentifier"
+    findings: list[CriticFinding] = []
+    examined = 0
+    for node in view.iter_nodes():
+        if node.has_type(IRI_PERSON):
+            examined += 1
+            for name in node.literals(IRI_NAME):
+                tokens = re.findall(r"[A-Za-z]+", name)
+                bad = [token for token in tokens if token.lower() in _NON_PERSON_NAME_TOKENS]
+                if not bad:
+                    continue
+                findings.append(
+                    _finding(
+                        rule_id="CRIT-H-ENTITY-TYPE-ANCHOR",
+                        severity="high",
+                        category="source_fidelity",
+                        target=CriticTarget(
+                            node_id=node.iri,
+                            predicate=IRI_NAME,
+                            json_pointer=node.location.json_pointer,
+                            path=node.location.path,
+                        ),
+                        evidence=[f"name={name}", f"non_person_tokens={bad}"],
+                        rationale=(
+                            "Person label contains a token that is an institutional, "
+                            "financial, scientific, or method phrase rather than a personal name."
+                        ),
+                        recommended_change=(
+                            "Retype the span as the thing the source text names, or "
+                            "leave it in extracted text instead of asserting a Person."
+                        ),
+                        verification_method=(
+                            "CanonicalNode name tokens intersect the non-person lexicon."
+                        ),
+                    )
+                )
+                break
+        phoneish = node.has_type(phone_type) or any(
+            t.endswith("PhoneAccount") or t.endswith("PhoneAccountFacet") for t in node.types
+        )
+        if not phoneish:
+            continue
+        examined += 1
+        values = node.literals(IRI_NAME) + node.literals(account_id)
+        for value in values:
+            if not _nanp_digits_implausible(value):
+                continue
+            findings.append(
+                _finding(
+                    rule_id="CRIT-H-ENTITY-TYPE-ANCHOR",
+                    severity="high",
+                    category="source_fidelity",
+                    target=CriticTarget(
+                        node_id=node.iri,
+                        predicate=account_id,
+                        json_pointer=node.location.json_pointer,
+                        path=node.location.path,
+                    ),
+                    evidence=[f"phone={value}"],
+                    rationale=(
+                        "PhoneAccount identifier is NANP-implausible: the area code "
+                        "or exchange starts with 0 or 1."
+                    ),
+                    recommended_change=(
+                        "Drop the PhoneAccount. Keep the digits in the source text "
+                        "unless a person confirms they are a telephone number."
+                    ),
+                    verification_method="NANP NPA/NXX first digit is 0 or 1.",
+                )
+            )
+            break
+    return findings, examined
 
 
 def _investigation_without_object(
